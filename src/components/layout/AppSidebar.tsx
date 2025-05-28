@@ -13,43 +13,44 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/chat/ThemeToggle';
-import { ModelSelector } from '@/components/chat/ModelSelector'; // New import
+import { ModelSelector } from '@/components/chat/ModelSelector';
 import { Button } from '@/components/ui/button';
-import { Menu, SquarePen, Bot } from 'lucide-react'; 
+import { Menu, SquarePen, Bot } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export function AppSidebar() {
   const router = useRouter();
 
   const handleNewChat = () => {
-    // Add a timestamp to ensure the URL changes and triggers the effect in page.tsx
     router.push(`/?newChat=true&ts=${Date.now()}`);
   };
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
-      <SidebarHeader className="p-3 items-start space-y-2">
-        <div className="flex items-center justify-between w-full">
-          <SidebarTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Menu />
-            </Button>
-          </SidebarTrigger>
+      <SidebarHeader className="p-3 flex flex-col items-start space-y-3">
+        {/* Row 1: Trigger */}
+        <SidebarTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-9 w-9 self-start">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SidebarTrigger>
+
+        {/* Row 2: Title/Logo div - hidden when sidebar is collapsed */}
+        <div className="flex items-center gap-2 pt-1 group-data-[collapsible=icon]:hidden">
+           <Bot className="h-7 w-7 text-primary" />
+           <h1 className="text-2xl font-semibold text-sidebar-foreground">ChimpChat</h1>
         </div>
-        <div className="flex items-center gap-2 px-1 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:hidden">
-           <Bot className="h-6 w-6 text-primary" />
-           <h1 className="text-lg font-semibold text-foreground">ChimpChat</h1>
-        </div>
-         {/* Model Selector Added Here */}
-        <div className="w-full pt-1 group-data-[collapsible=icon]:px-1">
+
+        {/* Row 3: ModelSelector div - adapts to collapsed state */}
+        <div className="w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:pt-1">
           <ModelSelector />
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton 
+            <SidebarMenuButton
               onClick={handleNewChat}
               tooltip={{children: "New Chat", side: "right", align: "center"}}
               className="group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9"

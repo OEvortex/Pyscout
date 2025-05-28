@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Check, ChevronDown, Loader2, ServerCrash } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 function parseModelName(id: string): string {
   const parts = id.split('/');
@@ -42,7 +43,11 @@ export function ModelSelector() {
         const parsedModels = data.data.map(m => ({ ...m, name: parseModelName(m.id) }));
         setModels(parsedModels);
         if (parsedModels.length > 0) {
-          setSelectedModelId(parsedModels[0].id); // Select the first model by default
+          // Try to select a model that includes "flash" or "default" preferentially, otherwise the first.
+          const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                                 parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                                 parsedModels[0];
+          setSelectedModelId(preferredModel.id);
         }
       } catch (err) {
         console.error(err);
@@ -56,71 +61,77 @@ export function ModelSelector() {
 
   const handleModelSelect = (modelId: string) => {
     setSelectedModelId(modelId);
-    // Here you would typically propagate the selected model to your chat logic,
-    // e.g., via a context or a callback prop.
     console.log("Selected model:", modelId);
   };
 
   const selectedModel = models.find(m => m.id === selectedModelId);
-
   const triggerLabel = selectedModel?.name || 'Select Model';
 
-  if (isLoading && sidebarState === "expanded") {
+  // Common classes for loading/error states when sidebar is expanded
+  const commonExpandedMessageClass = "w-full justify-start px-2 h-9 text-sm group-data-[collapsible=icon]:hidden";
+  // Common classes for loading/error states when sidebar is collapsed (icon only)
+  const commonCollapsedIconClass = "h-9 w-9 group-data-[collapsible=icon]:flex hidden";
+
+  if (isLoading) {
     return (
-      <Button variant="ghost" className="w-full justify-start px-2 h-9 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading Models...
-      </Button>
+      <>
+        <Button variant="ghost" className={cn(commonExpandedMessageClass, "text-muted-foreground")}>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Loading Models...
+        </Button>
+        <Button variant="ghost" size="icon" className={cn(commonCollapsedIconClass, "text-muted-foreground")}>
+          <Loader2 className="h-4 w-4 animate-spin" />
+        </Button>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Button variant="ghost" className={cn(commonExpandedMessageClass, "text-destructive-foreground bg-destructive/80 hover:bg-destructive")}>
+          <ServerCrash className="mr-2 h-4 w-4" />
+          Error loading
+        </Button>
+        <Button variant="ghost" size="icon" className={cn(commonCollapsedIconClass, "text-destructive-foreground bg-destructive/80 hover:bg-destructive")}>
+          <ServerCrash className="h-4 w-4" />
+        </Button>
+      </>
     );
   }
   
-  if (isLoading && sidebarState === "collapsed") {
+  if (models.length === 0 && !isLoading) {
      return (
-      <Button variant="ghost" size="icon" className="h-9 w-9 group-data-[collapsible=icon]:flex hidden">
-        <Loader2 className="h-4 w-4 animate-spin" />
-      </Button>
-    );
-  }
-
-
-  if (error && sidebarState === "expanded") {
-    return (
-       <Button variant="ghost" className="w-full justify-start px-2 h-9 text-sm text-destructive-foreground bg-destructive/80 hover:bg-destructive group-data-[collapsible=icon]:hidden">
-        <ServerCrash className="mr-2 h-4 w-4" />
-        Error loading models
-      </Button>
-    );
-  }
-
-   if (error && sidebarState === "collapsed") {
-     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive-foreground bg-destructive/80 hover:bg-destructive group-data-[collapsible=icon]:flex hidden">
-        <ServerCrash className="h-4 w-4" />
-      </Button>
-    );
-  }
-
-  if (models.length === 0 && !isLoading && sidebarState === "expanded") {
-    return <p className="px-2 py-1 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">No models available.</p>;
-  }
-  
-  if (models.length === 0 && !isLoading && sidebarState === "collapsed") {
-    return null; // Or a placeholder icon if preferred
+      <>
+        <p className={cn("px-2 py-1 text-sm text-muted-foreground", sidebarState === 'collapsed' ? 'hidden' : 'block group-data-[collapsible=icon]:hidden')}>
+          No models.
+        </p>
+         {/* Optionally, an icon for collapsed state if no models */}
+        <span className={cn("h-9 w-9 group-data-[collapsible=icon]:flex hidden items-center justify-center text-muted-foreground", sidebarState === 'expanded' ? 'hidden' : 'block')}>?</span>
+      </>
+     );
   }
 
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="w-full justify-between px-2 h-9 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+        <Button
+          variant="ghost" // Base variant, specific styles below
+          className={cn(
+            "text-sm font-medium rounded-md flex items-center transition-colors duration-150 ease-in-out",
+            // Expanded state:
+            "group-data-[collapsible=icon]:hidden px-3 py-1.5 h-auto bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+            // Collapsed state:
+            "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:bg-sidebar-accent group-data-[collapsible=icon]:text-sidebar-accent-foreground group-data-[collapsible=icon]:hover:bg-sidebar-accent/80 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-1 focus-visible:ring-offset-sidebar"
+          )}
           aria-label={`Selected model: ${triggerLabel}`}
         >
           <span className="truncate group-data-[collapsible=icon]:hidden">{triggerLabel}</span>
-          <ChevronDown className="h-4 w-4 group-data-[collapsible=icon]:hidden" />
-           <span className="group-data-[collapsible=icon]:flex hidden items-center justify-center w-full h-full">
-            {selectedModel?.name?.substring(0,1).toUpperCase() || 'M'} 
+          <ChevronDown className="h-4 w-4 ml-2 shrink-0 group-data-[collapsible=icon]:hidden" />
+          {/* Collapsed view: First letter of model name or 'M' */}
+          <span className="group-data-[collapsible=icon]:flex hidden items-center justify-center w-full h-full font-medium">
+            {selectedModel?.name?.substring(0,1).toUpperCase() || 'M'}
           </span>
         </Button>
       </DropdownMenuTrigger>
@@ -128,10 +139,10 @@ export function ModelSelector() {
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">Choose your model</DropdownMenuLabel>
         <DropdownMenuRadioGroup value={selectedModelId || undefined} onValueChange={handleModelSelect}>
           {models.map((model) => (
-            <DropdownMenuRadioItem 
-              key={model.id} 
-              value={model.id} 
-              className="text-sm cursor-pointer py-2 px-2 data-[state=checked]:font-semibold"
+            <DropdownMenuRadioItem
+              key={model.id}
+              value={model.id}
+              className="text-sm cursor-pointer py-2 px-2 data-[state=checked]:font-semibold hover:bg-accent/50 focus:bg-accent/60"
             >
               <div className="flex flex-col w-full">
                 <span>{model.name}</span>
@@ -139,14 +150,13 @@ export function ModelSelector() {
                   Owned by: {model.owned_by}
                 </span>
               </div>
-               {/* Check icon is handled by DropdownMenuRadioItem's indicator */}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator className="my-1 bg-border" />
-        <DropdownMenuItem className="p-0">
+        <DropdownMenuItem className="p-0 focus:bg-transparent">
             <div className="flex flex-col items-start px-2 py-2 w-full">
-                <p className="font-semibold text-sm">Upgrade to ChimpChat Pro</p>
+                <p className="font-semibold text-sm text-foreground">Upgrade to ChimpChat Pro</p>
                 <p className="text-xs text-muted-foreground mb-2">Get our most capable models and features</p>
                 <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                     Upgrade
@@ -157,3 +167,4 @@ export function ModelSelector() {
     </DropdownMenu>
   );
 }
+
