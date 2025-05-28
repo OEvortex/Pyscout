@@ -161,7 +161,7 @@ export function ModelSelector() {
         {!isLoading && !error && models.length > 0 && (
           <>
             <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 pt-1 pb-2">Choose your model</DropdownMenuLabel>
-            <ScrollArea className="max-h-[260px] pr-2"> {/* Approx 6-7 items at ~38px each + padding */}
+            <ScrollArea viewportClassName="max-h-[260px]" className="pr-2"> {/* Approx 6-7 items at ~38px each + padding */}
               <div className="space-y-1">
                 {models.map((model) => (
                   <DropdownMenuItem
