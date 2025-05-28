@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useRouter, useSearchParams } from 'next/navigation'; // Added useSearchParams and useRouter
 
 const SYSTEM_MESSAGE: Message = {
   id: 'system-prompt',
@@ -22,7 +22,10 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [showWelcome, setShowWelcome] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false); // Initialize to false
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Show welcome message only after a brief delay to allow initial render
@@ -34,6 +37,18 @@ export default function ChatPage() {
     }, 100); // Small delay
     return () => clearTimeout(timer);
   }, [messages.length, isLoading]);
+
+  // Effect to handle "New Chat" functionality via URL params
+  useEffect(() => {
+    const newChatParam = searchParams.get('newChat');
+    if (newChatParam === 'true') {
+      setMessages([]);
+      setIsLoading(false);
+      setShowWelcome(true); // Explicitly show welcome
+      // Clean up URL params without adding to history
+      router.replace('/', { scroll: false });
+    }
+  }, [searchParams, router]);
 
 
   const handleSendMessage = async (content: string) => {
@@ -99,21 +114,6 @@ export default function ChatPage() {
     }
   };
   
-  // Initial bot greeting is now handled by the welcome message logic
-  // or if you prefer, can be the first message added.
-  // For Gemini style, it's better to have the "Hello" prompt.
-  // useEffect(() => {
-  //   setMessages([
-  //     {
-  //       id: crypto.randomUUID(),
-  //       role: 'assistant',
-  //       content: "Hello! I'm ChimpChat. How can I help you today?",
-  //       timestamp: new Date()
-  //     }
-  //   ]);
-  // }, []);
-
-
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
       {/* Top bar within the main content area */}
@@ -147,3 +147,4 @@ export default function ChatPage() {
     </SidebarInset>
   );
 }
+

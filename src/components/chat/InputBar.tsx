@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, PlusCircle, LibraryBig, ScanLine, Mic } from 'lucide-react'; // Added new icons
+import { Send, PlusCircle, LibraryBig, ScanLine, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -52,7 +52,6 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'; 
         textareaRef.current.style.overflowY = 'hidden';
-        // textareaRef.current.focus(); // Keep focus if needed, Gemini doesn't always
       }
     }
   };
@@ -68,10 +67,13 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     <form 
       onSubmit={handleSubmit} 
       className={cn(
-        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto", // Centered and max-width
+        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group", // Added group class
       )}
     >
-      <div className="bg-card text-card-foreground p-3 rounded-3xl border border-input shadow-xl flex flex-col gap-2">
+      <div className={cn(
+        "bg-card text-card-foreground p-3 rounded-3xl border border-input shadow-xl flex flex-col gap-2",
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50" // Focus within animation
+      )}>
         <div className="flex items-end space-x-2">
           <Textarea
             ref={textareaRef}
@@ -126,7 +128,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md px-2 py-1 h-auto text-xs disabled:opacity-50"
+                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md px-2 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150" // Added transition
                     disabled={isLoading}
                     aria-label={item.label}
                   >
@@ -145,3 +147,4 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     </form>
   );
 }
+

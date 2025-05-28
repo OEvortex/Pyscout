@@ -11,14 +11,19 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarGroup,
-  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/chat/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { Menu, SquarePen, Settings, Bot } from 'lucide-react'; // SquarePen for New Chat
+import { Menu, SquarePen, Bot } from 'lucide-react'; // SquarePen for New Chat
+import { useRouter } from 'next/navigation';
 
 export function AppSidebar() {
+  const router = useRouter();
+
+  const handleNewChat = () => {
+    router.push(`/?newChat=true&ts=${Date.now()}`);
+  };
+
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
       <SidebarHeader className="p-3 items-start">
@@ -39,7 +44,10 @@ export function AppSidebar() {
       <SidebarContent className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip={{children: "New Chat", side: "right", align: "center"}}>
+            <SidebarMenuButton 
+              onClick={handleNewChat}
+              tooltip={{children: "New Chat", side: "right", align: "center"}}
+            >
               <SquarePen />
               <span>New Chat</span>
             </SidebarMenuButton>
@@ -55,3 +63,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
