@@ -39,20 +39,25 @@ export default function ChatPage() {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true);
+      // Clean up URL query parameters
       const currentPath = window.location.pathname;
-      router.replace(currentPath, { scroll: false });
+      router.replace(currentPath, { scroll: false }); 
     }
   }, [searchParams, router]);
 
   const handleModelChange = useCallback((modelId: string) => {
     setCurrentModelId(modelId);
+    // Optional: Clear chat when model changes, or notify user
+    // setMessages([]); 
+    // setShowWelcome(true);
+    // toast({ title: "Model Changed", description: `Switched to ${modelId}` });
   }, []);
 
   const handleSendMessage = async (content: string) => {
     if (!currentModelId) {
       toast({
         title: "Model Not Selected",
-        description: "Please wait for models to load or select a model from the dropdown.",
+        description: "Please select a model from the dropdown before sending a message.",
         variant: "destructive",
       });
       return;
@@ -68,10 +73,11 @@ export default function ChatPage() {
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
 
+    // Prepare messages for API, including system prompt and current conversation
     const messagesForApi = [
       { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
-      ...messages.map(m => ({ role: m.role, content: m.content })),
-      { role: 'user', content: newUserMessage.content }
+      ...messages.map(m => ({ role: m.role, content: m.content })), // Include previous messages
+      { role: 'user', content: newUserMessage.content } // Add new user message
     ];
 
     const botMessageId = crypto.randomUUID();
@@ -81,7 +87,10 @@ export default function ChatPage() {
       content: '', // Start with empty content for streaming
       timestamp: new Date(),
     };
+    // Add the initial empty bot message to UI immediately
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
+    
+    let accumulatedResponse = ""; // Accumulator for the current streaming message
 
     try {
       const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
@@ -94,14 +103,14 @@ export default function ChatPage() {
           model: currentModelId,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250, // Increased slightly
+          max_tokens: 250, 
           stream: true,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: `HTTP error! status: ${response.status}` }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.error?.message || errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       if (!response.body) {
@@ -110,41 +119,52 @@ export default function ChatPage() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let streamEnded = false;
+      let streamLoop = true;
 
-      while (!streamEnded) {
+      while (streamLoop) {
         const { done, value } = await reader.read();
         if (done) {
-          streamEnded = true;
+          streamLoop = false;
           break;
         }
 
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n\n');
+        const eventLines = chunk.split('\n\n');
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonDataString = line.substring(5).trim();
+        for (const eventLine of eventLines) {
+          if (eventLine.trim() === '') continue;
+
+          if (eventLine.startsWith('data: ')) {
+            const jsonDataString = eventLine.substring(5).trim();
+
             if (jsonDataString === '[DONE]') {
-              streamEnded = true;
-              break; 
+              streamLoop = false;
+              break;
             }
+
             if (jsonDataString) {
               try {
                 const parsed = JSON.parse(jsonDataString);
-                const deltaContent = parsed.choices?.[0]?.delta?.content;
-                if (deltaContent) {
-                  setMessages((prevMessages) =>
-                    prevMessages.map((msg) =>
-                      msg.id === botMessageId
-                        ? { ...msg, content: msg.content + deltaContent, timestamp: new Date() } 
-                        : msg
-                    )
-                  );
-                }
-                if (parsed.choices?.[0]?.finish_reason) {
-                  streamEnded = true;
-                  break;
+                const choice = parsed.choices?.[0];
+
+                if (choice) {
+                  const deltaContent = choice.delta?.content;
+                  
+                  if (typeof deltaContent === 'string' && deltaContent.length > 0) {
+                    accumulatedResponse += deltaContent;
+                    setMessages((prevMessages) =>
+                      prevMessages.map((msg) =>
+                        msg.id === botMessageId
+                          ? { ...msg, content: accumulatedResponse, timestamp: new Date() }
+                          : msg
+                      )
+                    );
+                  }
+
+                  if (choice.finish_reason) { // e.g., "stop", "length"
+                    streamLoop = false;
+                    break;
+                  }
                 }
               } catch (e) {
                 console.error('Error parsing stream data:', e, jsonDataString);
@@ -162,10 +182,11 @@ export default function ChatPage() {
         description: `Assistant communication failed: ${errorMessage}`,
         variant: "destructive",
       });
+      // Update the bot message with the error
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, content: "Sorry, I couldn't process your request. " + errorMessage, timestamp: new Date() }
+            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: new Date() }
             : msg
         )
       );
@@ -206,6 +227,7 @@ export default function ChatPage() {
                 Hello, I'm PyscoutAI
               </h2>
             </div>
+            {/* Suggestion cards removed for cleaner UI as per previous request */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
