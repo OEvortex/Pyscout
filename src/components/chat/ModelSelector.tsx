@@ -27,9 +27,8 @@ interface CachedModels {
 function parseModelName(id: string): string {
   const parts = id.split('/');
   let name = parts.length > 1 ? parts.slice(1).join('/') : id;
-  // Further improve parsing: handle cases like "gpt-3.5-turbo" -> "GPT 3.5 Turbo"
   name = name.replace(/-/g, ' ').split(' ').map(part => {
-    if (part.toLowerCase() === 'gpt' || part.match(/[a-zA-Z]\d/)) { // "gpt" or "g3"
+    if (part.toLowerCase() === 'gpt' || part.match(/[a-zA-Z]\d/)) {
       return part.toUpperCase();
     }
     if (part.length > 0) {
@@ -58,10 +57,12 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
   }, []);
 
   useEffect(() => {
-    setInternalSelectedModelId(selectedModelFromParent?.id || null);
-  }, [selectedModelFromParent]);
+    if (clientHasHydrated) {
+      setInternalSelectedModelId(selectedModelFromParent?.id || null);
+    }
+  }, [selectedModelFromParent, clientHasHydrated]);
 
-  const fetchAndCacheModels = useCallback(async (isClientHydrated: boolean) => {
+  const fetchAndCacheModels = useCallback(async () => { // Removed isClientHydrated param, relies on outer check
     setIsLoading(true);
     setError(null);
     try {
@@ -74,49 +75,45 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       
       setModels(parsedModels);
 
-      if (isClientHydrated) {
-        if (parsedModels.length > 0 && !selectedModelFromParent) {
-          const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
-                                 parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                                 parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                                 parsedModels[0];
-          if (preferredModel) {
-              setTimeout(() => onModelChange(preferredModel), 0);
-          }
-        } else if (parsedModels.length > 0 && selectedModelFromParent && !parsedModels.find(m => m.id === selectedModelFromParent.id)) {
-          const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
-                                 parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                                 parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                                 parsedModels[0];
-          if (preferredModel) {
-              setTimeout(() => onModelChange(preferredModel), 0);
-          }
+      if (parsedModels.length > 0 && !selectedModelFromParent) {
+        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                               parsedModels[0];
+        if (preferredModel) {
+            setTimeout(() => onModelChange(preferredModel), 0);
+        }
+      } else if (parsedModels.length > 0 && selectedModelFromParent && !parsedModels.find(m => m.id === selectedModelFromParent.id)) {
+        // If current parent selection is not in the new list, select a default
+        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                               parsedModels[0];
+        if (preferredModel) {
+            setTimeout(() => onModelChange(preferredModel), 0);
         }
       }
 
-      if (isClientHydrated && typeof window !== 'undefined') {
+      if (typeof window !== 'undefined') {
         localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify({ models: parsedModels, timestamp: Date.now() }));
       }
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
-      if (isClientHydrated) {
-        setTimeout(() => setIsLoading(false), 0);
-      } else {
-        setIsLoading(false);
-      }
+      setTimeout(() => setIsLoading(false), 0);
     }
-  }, [selectedModelFromParent, onModelChange]); // isClientHydrated is not needed here as it's passed as arg
+  }, [selectedModelFromParent, onModelChange]);
 
   useEffect(() => {
     const loadModels = async () => {
       if (!clientHasHydrated) {
-         if (!selectedModelFromParent) setIsLoading(true);
+        // Do not set isLoading to true here if it's already true by default,
+        // to avoid potential immediate state change before hydration for the placeholder.
         return;
       }
 
-      setIsLoading(true);
+      setIsLoading(true); // Set loading true when client has hydrated and we start loading
       setError(null);
       let loadedFromCache = false;
 
@@ -148,7 +145,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       }
 
       if (!loadedFromCache) {
-        await fetchAndCacheModels(clientHasHydrated);
+        await fetchAndCacheModels();
       }
     };
 
@@ -164,12 +161,27 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     setIsOpen(false); 
   };
 
-  const selectedModelForDisplay = clientHasHydrated ? models.find(m => m.id === internalSelectedModelId) : undefined;
+  if (!clientHasHydrated) {
+    return (
+      <Button
+        variant="ghost"
+        className="flex items-center px-1.5 py-1 h-auto rounded-md hover:bg-accent/20 data-[state=open]:bg-accent/30 focus-visible:ring-1 focus-visible:ring-ring"
+        disabled={true}
+        aria-label="Loading models"
+      >
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+        <span className="text-sm">Loading...</span>
+      </Button>
+    );
+  }
+
+  const selectedModelForDisplay = models.find(m => m.id === internalSelectedModelId);
   
   let triggerContent: React.ReactNode;
   let triggerDisabled = false;
 
-  if (!clientHasHydrated || (isLoading && !selectedModelForDisplay && !error)) {
+  // This logic now runs only after clientHasHydrated is true
+  if (isLoading && !selectedModelForDisplay && !error) {
     triggerContent = (
       <>
         <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -184,8 +196,8 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         <span className="text-sm text-destructive">Error</span>
       </>
     );
-    triggerDisabled = true; // Keep disabled on error
-  } else if (models.length === 0 && !isLoading) { // Models loaded, but list is empty
+    triggerDisabled = true;
+  } else if (models.length === 0 && !isLoading) {
     triggerContent = <span className="text-sm">No Models</span>;
     triggerDisabled = true;
   } else {
@@ -220,11 +232,11 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         )}
         align="start"
       >
-        {isLoading && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
-        {error && clientHasHydrated && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
-        {!isLoading && !error && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
+        {isLoading && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
+        {error && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
+        {!isLoading && !error && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
         
-        {clientHasHydrated && !isLoading && !error && models.length > 0 && (
+        {!isLoading && !error && models.length > 0 && (
           <>
             <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 pt-1 pb-2">Choose your model</DropdownMenuLabel>
             <ScrollArea viewportClassName="max-h-[260px]" className="pr-1"> 
@@ -266,11 +278,9 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
             </DropdownMenuItem>
           </>
         )}
-        {!clientHasHydrated && ( // Show a generic loading state for SSR / pre-hydration
-            <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
+    
