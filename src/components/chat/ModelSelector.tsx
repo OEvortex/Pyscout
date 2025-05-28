@@ -27,7 +27,16 @@ interface CachedModels {
 function parseModelName(id: string): string {
   const parts = id.split('/');
   let name = parts.length > 1 ? parts.slice(1).join('/') : id;
-  name = name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  // Further improve parsing: handle cases like "gpt-3.5-turbo" -> "GPT 3.5 Turbo"
+  name = name.replace(/-/g, ' ').split(' ').map(part => {
+    if (part.toLowerCase() === 'gpt' || part.match(/[a-zA-Z]\d/)) { // "gpt" or "g3"
+      return part.toUpperCase();
+    }
+    if (part.length > 0) {
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }
+    return "";
+  }).join(' ');
   return name;
 }
 
@@ -65,23 +74,22 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       
       setModels(parsedModels);
 
-      if (isClientHydrated) { // Only attempt to auto-select or update based on new list if client is hydrated
+      if (isClientHydrated) {
         if (parsedModels.length > 0 && !selectedModelFromParent) {
           const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                  parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                  parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
                                  parsedModels[0];
           if (preferredModel) {
-              onModelChange(preferredModel);
+              setTimeout(() => onModelChange(preferredModel), 0);
           }
         } else if (parsedModels.length > 0 && selectedModelFromParent && !parsedModels.find(m => m.id === selectedModelFromParent.id)) {
-          // If current parent selection is not in the new list, pick a new default
           const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                  parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                  parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
                                  parsedModels[0];
           if (preferredModel) {
-              onModelChange(preferredModel);
+              setTimeout(() => onModelChange(preferredModel), 0);
           }
         }
       }
@@ -93,21 +101,18 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       console.error(err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
-      setIsLoading(false);
+      if (isClientHydrated) {
+        setTimeout(() => setIsLoading(false), 0);
+      } else {
+        setIsLoading(false);
+      }
     }
-  }, [selectedModelFromParent, onModelChange]);
+  }, [selectedModelFromParent, onModelChange]); // isClientHydrated is not needed here as it's passed as arg
 
   useEffect(() => {
     const loadModels = async () => {
       if (!clientHasHydrated) {
-        // For server render and initial client render before hydration,
-        // we can't rely on localStorage or make dynamic choices that might differ.
-        // We could fetch, but not auto-select based on cache.
-        // Or, simply show "Loading..." and let the client-side effect handle it.
-        // To ensure consistency, we might even avoid fetching here and let fetchAndCacheModels run once clientHasHydrated.
-        // For now, let's ensure fetchAndCacheModels is only called meaningfully post-hydration or is benign pre-hydration.
-        // The critical part is that `onModelChange` isn't called in a way that mismatches server.
-         if (!selectedModelFromParent) setIsLoading(true); // Keep loading state if no model selected yet
+         if (!selectedModelFromParent) setIsLoading(true);
         return;
       }
 
@@ -129,10 +134,10 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
                                        parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
                                        parsedCachedModels[0];
                 if (preferredModel) {
-                  onModelChange(preferredModel);
+                  setTimeout(() => onModelChange(preferredModel), 0);
                 }
               }
-              setIsLoading(false);
+              setTimeout(() => setIsLoading(false), 0);
               loadedFromCache = true;
             }
           }
@@ -159,13 +164,12 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     setIsOpen(false); 
   };
 
-  const selectedModelForDisplay = models.find(m => m.id === internalSelectedModelId);
+  const selectedModelForDisplay = clientHasHydrated ? models.find(m => m.id === internalSelectedModelId) : undefined;
   
   let triggerContent: React.ReactNode;
   let triggerDisabled = false;
 
-  // Ensure initial render is consistent if isLoading is true
-  if (isLoading && !selectedModelForDisplay && !error) {
+  if (!clientHasHydrated || (isLoading && !selectedModelForDisplay && !error)) {
     triggerContent = (
       <>
         <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -180,11 +184,11 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         <span className="text-sm text-destructive">Error</span>
       </>
     );
-    triggerDisabled = true;
-  } else if (!isLoading && models.length === 0 && !error) { // Ensure models are loaded before saying "No Models"
+    triggerDisabled = true; // Keep disabled on error
+  } else if (models.length === 0 && !isLoading) { // Models loaded, but list is empty
     triggerContent = <span className="text-sm">No Models</span>;
     triggerDisabled = true;
-  } else { // This will be the case if selectedModelForDisplay is available, or if loading is done and models exist
+  } else {
     triggerContent = (
       <>
         <span className="text-sm font-medium">{selectedModelForDisplay?.name || 'Select Model'}</span>
@@ -192,7 +196,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200", isOpen && "rotate-180")} />
       </>
     );
-     triggerDisabled = isLoading && models.length === 0; // Disable if still loading initial models
+     triggerDisabled = isLoading && models.length === 0; 
   }
 
 
@@ -216,11 +220,11 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         )}
         align="start"
       >
-        {isLoading && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
-        {error && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
-        {!isLoading && !error && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
+        {isLoading && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
+        {error && clientHasHydrated && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
+        {!isLoading && !error && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
         
-        {!isLoading && !error && models.length > 0 && (
+        {clientHasHydrated && !isLoading && !error && models.length > 0 && (
           <>
             <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 pt-1 pb-2">Choose your model</DropdownMenuLabel>
             <ScrollArea viewportClassName="max-h-[260px]" className="pr-1"> 
@@ -261,6 +265,9 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
                 </div>
             </DropdownMenuItem>
           </>
+        )}
+        {!clientHasHydrated && ( // Show a generic loading state for SSR / pre-hydration
+            <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
