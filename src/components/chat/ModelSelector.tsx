@@ -26,7 +26,10 @@ interface CachedModels {
 
 function parseModelName(id: string): string {
   const parts = id.split('/');
-  return parts.length > 1 ? parts.slice(1).join('/') : id;
+  let name = parts.length > 1 ? parts.slice(1).join('/') : id;
+  // Capitalize first letter of each part for better display
+  name = name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  return name;
 }
 
 export function ModelSelector() {
@@ -55,7 +58,6 @@ export function ModelSelector() {
         setSelectedModelId(preferredModel.id);
       }
 
-      // Cache the fetched models
       if (typeof window !== 'undefined') {
         localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify({ models: parsedModels, timestamp: Date.now() }));
       }
@@ -65,7 +67,7 @@ export function ModelSelector() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedModelId]);
+  }, [selectedModelId]); // Keep selectedModelId dependency
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -74,31 +76,30 @@ export function ModelSelector() {
         if (cachedDataString) {
           const cachedData = JSON.parse(cachedDataString) as CachedModels;
           if (Date.now() - cachedData.timestamp < CACHE_DURATION_MS && cachedData.models.length > 0) {
-            setModels(cachedData.models);
-            if (!selectedModelId && cachedData.models.length > 0) {
-              const preferredModel = cachedData.models.find(m => m.id.toLowerCase().includes('flash')) ||
-                                     cachedData.models.find(m => m.id.toLowerCase().includes('default')) ||
-                                     cachedData.models[0];
+            const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
+            setModels(parsedCachedModels);
+            if (!selectedModelId && parsedCachedModels.length > 0) {
+              const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                                     parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                                     parsedCachedModels[0];
               setSelectedModelId(preferredModel.id);
             }
             setIsLoading(false);
-            return; // Use cached data
+            return; 
           }
         }
       } catch (e) {
         console.error("Failed to read or parse model cache:", e);
-        localStorage.removeItem(MODEL_CACHE_KEY); // Clear corrupted cache
+        localStorage.removeItem(MODEL_CACHE_KEY); 
       }
     }
-    // If no valid cache, or cache is stale, fetch models
     fetchAndCacheModels();
   }, [fetchAndCacheModels, selectedModelId]);
 
 
   const handleModelSelect = (modelId: string) => {
     setSelectedModelId(modelId);
-    setIsOpen(false); // Close dropdown after selection
-    // console.log("Selected model:", modelId);
+    setIsOpen(false); 
   };
 
   const selectedModel = models.find(m => m.id === selectedModelId);
@@ -109,27 +110,28 @@ export function ModelSelector() {
   if (isLoading) {
     triggerContent = (
       <>
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading Models...
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+        <span className="text-sm">Loading...</span>
       </>
     );
     triggerDisabled = true;
   } else if (error) {
     triggerContent = (
       <>
-        <ServerCrash className="mr-2 h-4 w-4 text-destructive" />
-        <span className="text-destructive">Error</span>
+        <ServerCrash className="mr-1.5 h-4 w-4 text-destructive" />
+        <span className="text-sm text-destructive">Error</span>
       </>
     );
     triggerDisabled = true;
   } else if (models.length === 0) {
-    triggerContent = "No Models Available";
+    triggerContent = <span className="text-sm">No Models</span>;
     triggerDisabled = true;
   } else {
     triggerContent = (
       <>
-        {selectedModel?.name || 'Select Model'}
-        <ChevronDown className={cn("ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200", isOpen && "rotate-180")} />
+        <span className="text-sm font-medium">{selectedModel?.name || 'Select Model'}</span>
+        <span className="text-sm text-muted-foreground ml-1">(preview)</span>
+        <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200", isOpen && "rotate-180")} />
       </>
     );
   }
@@ -139,7 +141,7 @@ export function ModelSelector() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="text-base font-medium flex items-center px-3 py-1.5 h-auto rounded-md hover:bg-accent/70 data-[state=open]:bg-accent/90"
+          className="flex items-center px-1.5 py-1 h-auto rounded-md hover:bg-accent/20 data-[state=open]:bg-accent/30 focus-visible:ring-1 focus-visible:ring-ring"
           disabled={triggerDisabled}
           aria-label={`Selected model: ${selectedModel?.name || 'Select Model'}`}
         >
@@ -148,34 +150,34 @@ export function ModelSelector() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         className={cn(
-            "w-72 sm:w-80 bg-card text-card-foreground border-border shadow-xl p-2", // Increased padding
+            "w-72 sm:w-80 bg-popover text-popover-foreground border-border shadow-xl p-2", 
             "z-50 rounded-lg", 
             "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
         )}
-        align="start"
+        align="start" // Gemini style often aligns start
       >
-        {isLoading && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading...</DropdownMenuLabel>}
+        {isLoading && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
         {error && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
         {!isLoading && !error && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
         
         {!isLoading && !error && models.length > 0 && (
           <>
             <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 pt-1 pb-2">Choose your model</DropdownMenuLabel>
-            <ScrollArea viewportClassName="max-h-[260px]" className="pr-2"> {/* Approx 6-7 items at ~38px each + padding */}
+            <ScrollArea viewportClassName="max-h-[260px]" className="pr-1"> 
               <div className="space-y-1">
                 {models.map((model) => (
                   <DropdownMenuItem
                     key={model.id}
                     onSelect={() => handleModelSelect(model.id)}
                     className={cn(
-                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground",
+                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground", // Slightly more padding
                       selectedModelId === model.id && "bg-accent text-accent-foreground"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col">
                         <span className={cn("font-medium", selectedModelId === model.id && "text-primary")}>{model.name}</span>
-                        <span className="text-xs text-muted-foreground mt-0.5">
+                        <span className="text-xs text-muted-foreground/80 mt-0.5">
                           Owned by: {model.owned_by}
                         </span>
                       </div>
@@ -204,4 +206,3 @@ export function ModelSelector() {
     </DropdownMenu>
   );
 }
-

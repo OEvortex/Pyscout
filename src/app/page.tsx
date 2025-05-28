@@ -19,6 +19,14 @@ const SYSTEM_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
+const SUGGESTION_CARDS = [
+  { title: "Create an app", subtitle: "for tracking tasks", prompt: "Create an app for tracking tasks", dataAiHint: "app development" },
+  { title: "Write a screenplay", subtitle: "for a Chemistry 101 video", prompt: "Write a screenplay for a Chemistry 101 video", dataAiHint: "script writing" },
+  { title: "Write requirements for", subtitle: "a fitness tracking app", prompt: "Write requirements for a fitness tracking app", dataAiHint: "fitness health" },
+  { title: "Design an interactive", subtitle: "kaleidoscope", prompt: "Design an interactive kaleidoscope", dataAiHint: "art design" },
+];
+
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +52,6 @@ export default function ChatPage() {
       setIsLoading(false);
       setShowWelcome(true); 
       const currentPath = window.location.pathname;
-      // Replace the current entry in the history stack to remove query params
       router.replace(currentPath, { scroll: false }); 
     }
   }, [searchParams, router]);
@@ -71,7 +78,6 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           messages: messagesForApi,
-          // Future: Pass selectedModelId from ModelSelector here
         }),
       });
 
@@ -116,8 +122,11 @@ export default function ChatPage() {
   
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
-      <header className="flex items-center justify-between p-3 border-b border-border sticky top-0 bg-background z-10 h-[60px]">
-        <ModelSelector />
+      <header className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-10 h-[60px]">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-semibold text-foreground">PyscoutAI</span>
+          <ModelSelector />
+        </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="text-sm">
             <Sparkles className="mr-2 h-4 w-4" />
@@ -132,13 +141,28 @@ export default function ChatPage() {
       <div className="flex-grow flex flex-col relative">
         {showWelcome && messages.length === 0 && !isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in duration-500 ease-out">
-            <Bot className="h-16 w-16 text-muted-foreground mb-6" />
-            <h2 
-              className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
-            >
-              Hello, I'm PyscoutAI
-            </h2>
-            <p className="text-muted-foreground mt-2 text-center">How can I help you today?</p>
+            <div className="text-center"> {/* Wrapper for centering */}
+              <Bot className="h-16 w-16 text-muted-foreground mb-6 mx-auto" />
+              <h2 
+                className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center mb-10"
+              >
+                Hello, I'm PyscoutAI
+              </h2>
+            </div>
+            <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-4 max-w-4xl mx-auto">
+              {SUGGESTION_CARDS.map((item) => (
+                <Button
+                  key={item.title}
+                  variant="outline"
+                  className="bg-card hover:bg-card/90 border-border text-card-foreground h-auto p-3.5 rounded-xl flex flex-col items-start text-left w-full min-w-[180px] sm:min-w-[200px]"
+                  onClick={() => handleSendMessage(item.prompt)}
+                  data-ai-hint={item.dataAiHint}
+                >
+                  <span className="font-medium text-sm">{item.title}</span>
+                  <span className="text-xs text-muted-foreground mt-1">{item.subtitle}</span>
+                </Button>
+              ))}
+            </div>
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />

@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, PlusCircle, LibraryBig, ScanLine, Mic } from 'lucide-react';
+import { Plus, Video, Brain, GalleryVerticalEnd, Mic } from 'lucide-react'; // Updated icons
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -71,7 +71,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
       )}
     >
       <div className={cn(
-        "bg-card text-card-foreground p-3 rounded-3xl border border-input shadow-xl flex flex-col gap-2",
+        "bg-card text-card-foreground p-3 rounded-xl border border-input shadow-xl flex flex-col gap-2.5", // Rounded-xl, increased gap
         "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50"
       )}>
         <div className="flex items-end space-x-2">
@@ -80,21 +80,12 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask PyscoutAI..."
+            placeholder="Ask PyscoutAI" // Updated placeholder
             className="flex-grow resize-none overflow-y-hidden p-2.5 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px]"
             rows={1}
             disabled={isLoading}
             aria-label="Chat message input"
           />
-          <Button 
-            type="submit" 
-            disabled={isLoading || !inputValue.trim()} 
-            size="icon" 
-            className="h-10 w-10 p-0 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:bg-muted disabled:text-muted-foreground transition-transform hover:scale-105 active:scale-95 self-end flex items-center justify-center shrink-0"
-            aria-label="Send message"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -115,11 +106,28 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className="flex items-center space-x-2 pl-1">
+        <div className="flex items-center space-x-1.5 pl-1">
+           <TooltipProvider>
+             <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg disabled:opacity-50 transition-colors duration-150"
+                    disabled={isLoading}
+                    aria-label="Attach"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent side="top"><p>Attach</p></TooltipContent>
+             </Tooltip>
+           </TooltipProvider>
           {[
-            { icon: PlusCircle, label: "Attach file", tip: "Attach file (placeholder)" },
-            { icon: LibraryBig, label: "Research", tip: "Deep research (placeholder)" },
-            { icon: ScanLine, label: "Canvas", tip: "Open canvas (placeholder)" },
+            { icon: Video, label: "Video", tip: "Process video (placeholder)" },
+            { icon: Brain, label: "Deep Research", tip: "Deep research (placeholder)" },
+            { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas (placeholder)" },
           ].map((item, index) => (
             <TooltipProvider key={index}>
               <Tooltip>
@@ -128,7 +136,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md px-2 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150"
+                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg px-2.5 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150"
                     disabled={isLoading}
                     aria-label={item.label}
                   >

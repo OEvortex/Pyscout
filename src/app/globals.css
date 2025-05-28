@@ -47,23 +47,23 @@ body {
   }
 
   .dark {
-    --background: 220 12% 6%; /* Very dark gray for main content */
-    --foreground: 220 15% 92%; /* Light gray text */
-    --card: 220 10% 10%; /* Slightly lighter dark gray for sidebar, input bar cards */
-    --card-foreground: 220 15% 92%;
-    --popover: 220 10% 10%;
-    --popover-foreground: 220 15% 92%;
+    --background: 220 10% 8%; /* Gemini: Very dark gray, almost black */
+    --foreground: 210 20% 90%; /* Gemini: Light gray text */
+    --card: 220 10% 12%; /* Gemini: Slightly lighter dark gray for cards, input bar */
+    --card-foreground: 210 20% 85%;
+    --popover: 220 8% 10%; 
+    --popover-foreground: 210 20% 85%;
     --primary: 200 80% 60%; /* Muted cyan/blue for accents */
     --primary-foreground: 220 10% 10%; 
     --secondary: 220 10% 15%; /* Darker gray */
     --secondary-foreground: 220 15% 88%;
-    --muted: 220 10% 15%;
-    --muted-foreground: 220 10% 68%;
+    --muted: 220 10% 15%; /* Background for suggestion card subtitles */
+    --muted-foreground: 220 10% 60%; /* Text for suggestion card subtitles */
     --accent: 200 80% 60%; 
     --accent-foreground: 220 10% 10%; 
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 18%; /* Subtle border */
+    --border: 220 10% 20%; /* Gemini: Subtle border for cards if needed */
     --input: 220 10% 18%; 
     --ring: 200 80% 60%;
     --chart-1: 200 70% 60%;
@@ -74,7 +74,7 @@ body {
     --radius: 0.75rem;
 
     /* Sidebar specific vars for dark mode - Gemini like */
-    --sidebar-background: 220 10% 8%; /* Slightly different from card for depth */
+    --sidebar-background: 220 10% 8%; 
     --sidebar-foreground: 220 15% 90%;
     --sidebar-primary: 200 75% 58%;
     --sidebar-primary-foreground: 220 10% 8%;
