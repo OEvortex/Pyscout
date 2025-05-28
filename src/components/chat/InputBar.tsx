@@ -4,9 +4,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Video, Brain, GalleryVerticalEnd, Mic } from 'lucide-react'; // Updated icons
+import { Plus, Image as ImageIcon, Brain, GalleryVerticalEnd, Mic } from 'lucide-react'; // Updated Video to ImageIcon
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useToast } from "@/hooks/use-toast";
 
 
 interface InputBarProps {
@@ -19,6 +20,7 @@ const MAX_TEXTAREA_HEIGHT = 180;
 export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(event.target.value);
@@ -63,6 +65,13 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     }
   };
 
+  const showComingSoonToast = (featureName: string) => {
+    toast({
+      title: "Coming Soon!",
+      description: `${featureName} feature will be available in a future update.`,
+    });
+  };
+
   return (
     <form 
       onSubmit={handleSubmit} 
@@ -80,7 +89,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask PyscoutAI" // Updated placeholder
+            placeholder="Ask PyscoutAI"
             className="flex-grow resize-none overflow-y-hidden p-2.5 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px]"
             rows={1}
             disabled={isLoading}
@@ -125,9 +134,9 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
              </Tooltip>
            </TooltipProvider>
           {[
-            { icon: Video, label: "Video", tip: "Process video (placeholder)" },
-            { icon: Brain, label: "Deep Research", tip: "Deep research (placeholder)" },
-            { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas (placeholder)" },
+            { icon: ImageIcon, label: "Image", tip: "Process image (placeholder)", action: () => showComingSoonToast("Image Processing") },
+            { icon: Brain, label: "Deep Research", tip: "Deep research (placeholder)", action: () => showComingSoonToast("Deep Research") },
+            { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas (placeholder)", action: () => showComingSoonToast("Canvas") },
           ].map((item, index) => (
             <TooltipProvider key={index}>
               <Tooltip>
@@ -139,6 +148,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
                     className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg px-2.5 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150"
                     disabled={isLoading}
                     aria-label={item.label}
+                    onClick={item.action}
                   >
                     <item.icon className="h-4 w-4 mr-1.5" />
                     {item.label}

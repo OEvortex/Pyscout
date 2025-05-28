@@ -9,7 +9,7 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon for clarity if needed elsewhere, though Bot is used here
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE: Message = {
@@ -18,14 +18,6 @@ const SYSTEM_MESSAGE: Message = {
   content: 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.',
   timestamp: new Date(),
 };
-
-const SUGGESTION_CARDS = [
-  { title: "Create an app", subtitle: "for tracking tasks", prompt: "Create an app for tracking tasks", dataAiHint: "app development" },
-  { title: "Write a screenplay", subtitle: "for a Chemistry 101 video", prompt: "Write a screenplay for a Chemistry 101 video", dataAiHint: "script writing" },
-  { title: "Write requirements for", subtitle: "a fitness tracking app", prompt: "Write requirements for a fitness tracking app", dataAiHint: "fitness health" },
-  { title: "Design an interactive", subtitle: "kaleidoscope", prompt: "Design an interactive kaleidoscope", dataAiHint: "art design" },
-];
-
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -51,6 +43,7 @@ export default function ChatPage() {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true); 
+      // Clean the URL by removing query params
       const currentPath = window.location.pathname;
       router.replace(currentPath, { scroll: false }); 
     }
@@ -68,6 +61,8 @@ export default function ChatPage() {
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
 
+    // Ensure SYSTEM_MESSAGE is always first for the API if it's not already in messages.
+    // For this mock, we'll just pass the current message log + new user message.
     const messagesForApi = [SYSTEM_MESSAGE, ...messages, newUserMessage].map(m => ({role: m.role, content: m.content}));
 
     try {
@@ -77,7 +72,7 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: messagesForApi,
+          messages: messagesForApi, // Send all relevant messages
         }),
       });
 
@@ -98,6 +93,7 @@ export default function ChatPage() {
         };
         setMessages((prevMessages) => [...prevMessages, newBotMessage]);
       } else {
+        // It's good practice to handle cases where the expected data isn't there.
         throw new Error("Received an empty response from the assistant.");
       }
     } catch (error) {
@@ -108,6 +104,7 @@ export default function ChatPage() {
         description: `Failed to get response from assistant: ${errorMessage}`,
         variant: "destructive",
       });
+       // Optionally add an error message to the chat window
        const errorBotMessage: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
@@ -141,28 +138,15 @@ export default function ChatPage() {
       <div className="flex-grow flex flex-col relative">
         {showWelcome && messages.length === 0 && !isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in duration-500 ease-out">
-            <div className="text-center"> {/* Wrapper for centering */}
+            <div className="text-center mb-10"> {/* Wrapper for centering text and icon */}
               <Bot className="h-16 w-16 text-muted-foreground mb-6 mx-auto" />
               <h2 
-                className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center mb-10"
+                className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
               >
                 Hello, I'm PyscoutAI
               </h2>
             </div>
-            <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 px-4 max-w-4xl mx-auto">
-              {SUGGESTION_CARDS.map((item) => (
-                <Button
-                  key={item.title}
-                  variant="outline"
-                  className="bg-card hover:bg-card/90 border-border text-card-foreground h-auto p-3.5 rounded-xl flex flex-col items-start text-left w-full min-w-[180px] sm:min-w-[200px]"
-                  onClick={() => handleSendMessage(item.prompt)}
-                  data-ai-hint={item.dataAiHint}
-                >
-                  <span className="font-medium text-sm">{item.title}</span>
-                  <span className="text-xs text-muted-foreground mt-1">{item.subtitle}</span>
-                </Button>
-              ))}
-            </div>
+            {/* Suggestion cards removed */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
