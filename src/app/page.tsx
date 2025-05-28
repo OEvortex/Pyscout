@@ -99,7 +99,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
-      <header className="flex items-center justify-between p-3 border-b shadow-sm sticky top-0 bg-background z-10">
+      <header className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background z-10">
         <div className="flex items-center space-x-2">
           <Bot className="h-7 w-7 text-primary" />
           <h1 className="text-xl font-semibold text-foreground">ChimpChat</h1>

@@ -23,7 +23,7 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
 
   return (
     <ScrollArea className="flex-grow" viewportRef={viewportRef} ref={scrollAreaRef}>
-      <div className="p-4 space-y-1">
+      <div className="p-4 sm:p-6 space-y-3">
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
