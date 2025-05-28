@@ -38,21 +38,21 @@ interface ModelSelectorProps {
 
 export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelSelectorProps) {
   const [models, setModels] = useState<Model[]>([]);
-  const [internalSelectedModelId, setInternalSelectedModelId] = useState<string | null>(selectedModelFromParent?.id || null);
+  const [internalSelectedModelId, setInternalSelectedModelId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [clientHasHydrated, setClientHasHydrated] = useState(false);
+
+  useEffect(() => {
+    setClientHasHydrated(true);
+  }, []);
 
   useEffect(() => {
     setInternalSelectedModelId(selectedModelFromParent?.id || null);
   }, [selectedModelFromParent]);
 
-  const selectAndNotifyParent = useCallback((model: Model) => {
-    setInternalSelectedModelId(model.id);
-    onModelChange(model);
-  }, [onModelChange]);
-
-  const fetchAndCacheModels = useCallback(async () => {
+  const fetchAndCacheModels = useCallback(async (isClientHydrated: boolean) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -64,26 +64,29 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       const parsedModels = data.data.map(m => ({ ...m, name: parseModelName(m.id) }));
       
       setModels(parsedModels);
-      if (parsedModels.length > 0 && !internalSelectedModelId) {
-        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                               parsedModels[0];
-        if (preferredModel) {
-            selectAndNotifyParent(preferredModel);
-        }
-      } else if (parsedModels.length > 0 && internalSelectedModelId && !parsedModels.find(m => m.id === internalSelectedModelId)) {
-        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                               parsedModels[0];
-        if (preferredModel) {
-            selectAndNotifyParent(preferredModel);
+
+      if (isClientHydrated) { // Only attempt to auto-select or update based on new list if client is hydrated
+        if (parsedModels.length > 0 && !selectedModelFromParent) {
+          const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                                 parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                                 parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                                 parsedModels[0];
+          if (preferredModel) {
+              onModelChange(preferredModel);
+          }
+        } else if (parsedModels.length > 0 && selectedModelFromParent && !parsedModels.find(m => m.id === selectedModelFromParent.id)) {
+          // If current parent selection is not in the new list, pick a new default
+          const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                                 parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                                 parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                                 parsedModels[0];
+          if (preferredModel) {
+              onModelChange(preferredModel);
+          }
         }
       }
 
-
-      if (typeof window !== 'undefined') {
+      if (isClientHydrated && typeof window !== 'undefined') {
         localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify({ models: parsedModels, timestamp: Date.now() }));
       }
     } catch (err) {
@@ -92,43 +95,66 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     } finally {
       setIsLoading(false);
     }
-  }, [internalSelectedModelId, selectAndNotifyParent]); 
+  }, [selectedModelFromParent, onModelChange]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const cachedDataString = localStorage.getItem(MODEL_CACHE_KEY);
-        if (cachedDataString) {
-          const cachedData = JSON.parse(cachedDataString) as CachedModels;
-          if (Date.now() - cachedData.timestamp < CACHE_DURATION_MS && cachedData.models.length > 0) {
-            const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
-            setModels(parsedCachedModels);
-            if (!internalSelectedModelId && parsedCachedModels.length > 0) {
-              const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
-                                     parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                                     parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                                     parsedCachedModels[0];
-              if (preferredModel) {
-                selectAndNotifyParent(preferredModel);
-              }
-            }
-            setIsLoading(false);
-            return; 
-          }
-        }
-      } catch (e) {
-        console.error("Failed to read or parse model cache:", e);
-        localStorage.removeItem(MODEL_CACHE_KEY); 
+    const loadModels = async () => {
+      if (!clientHasHydrated) {
+        // For server render and initial client render before hydration,
+        // we can't rely on localStorage or make dynamic choices that might differ.
+        // We could fetch, but not auto-select based on cache.
+        // Or, simply show "Loading..." and let the client-side effect handle it.
+        // To ensure consistency, we might even avoid fetching here and let fetchAndCacheModels run once clientHasHydrated.
+        // For now, let's ensure fetchAndCacheModels is only called meaningfully post-hydration or is benign pre-hydration.
+        // The critical part is that `onModelChange` isn't called in a way that mismatches server.
+         if (!selectedModelFromParent) setIsLoading(true); // Keep loading state if no model selected yet
+        return;
       }
-    }
-    fetchAndCacheModels();
-  }, [fetchAndCacheModels, internalSelectedModelId, selectAndNotifyParent]);
+
+      setIsLoading(true);
+      setError(null);
+      let loadedFromCache = false;
+
+      if (typeof window !== 'undefined') {
+        try {
+          const cachedDataString = localStorage.getItem(MODEL_CACHE_KEY);
+          if (cachedDataString) {
+            const cachedData = JSON.parse(cachedDataString) as CachedModels;
+            if (Date.now() - cachedData.timestamp < CACHE_DURATION_MS && cachedData.models.length > 0) {
+              const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
+              setModels(parsedCachedModels);
+              if (!selectedModelFromParent && parsedCachedModels.length > 0) {
+                const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                                       parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                                       parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                                       parsedCachedModels[0];
+                if (preferredModel) {
+                  onModelChange(preferredModel);
+                }
+              }
+              setIsLoading(false);
+              loadedFromCache = true;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to read or parse model cache:", e);
+          if (typeof window !== 'undefined') localStorage.removeItem(MODEL_CACHE_KEY);
+        }
+      }
+
+      if (!loadedFromCache) {
+        await fetchAndCacheModels(clientHasHydrated);
+      }
+    };
+
+    loadModels();
+  }, [clientHasHydrated, selectedModelFromParent, onModelChange, fetchAndCacheModels]);
 
 
   const handleModelSelect = (modelId: string) => {
     const selectedModelObject = models.find(m => m.id === modelId);
     if (selectedModelObject) {
-      selectAndNotifyParent(selectedModelObject);
+      onModelChange(selectedModelObject);
     }
     setIsOpen(false); 
   };
@@ -138,7 +164,8 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
   let triggerContent: React.ReactNode;
   let triggerDisabled = false;
 
-  if (isLoading) {
+  // Ensure initial render is consistent if isLoading is true
+  if (isLoading && !selectedModelForDisplay && !error) {
     triggerContent = (
       <>
         <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -154,10 +181,10 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       </>
     );
     triggerDisabled = true;
-  } else if (models.length === 0) {
+  } else if (!isLoading && models.length === 0 && !error) { // Ensure models are loaded before saying "No Models"
     triggerContent = <span className="text-sm">No Models</span>;
     triggerDisabled = true;
-  } else {
+  } else { // This will be the case if selectedModelForDisplay is available, or if loading is done and models exist
     triggerContent = (
       <>
         <span className="text-sm font-medium">{selectedModelForDisplay?.name || 'Select Model'}</span>
@@ -165,7 +192,9 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200", isOpen && "rotate-180")} />
       </>
     );
+     triggerDisabled = isLoading && models.length === 0; // Disable if still loading initial models
   }
+
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -187,7 +216,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         )}
         align="start"
       >
-        {isLoading && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
+        {isLoading && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
         {error && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
         {!isLoading && !error && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
         
@@ -237,3 +266,4 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     </DropdownMenu>
   );
 }
+
