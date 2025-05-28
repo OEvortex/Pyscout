@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Message } from '@/types/chat';
@@ -15,9 +16,9 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
 
   if (isShimmer) {
     return (
-      <div className={cn('flex items-start space-x-3 py-3 animate-pulse', !isUser ? 'justify-start' : 'justify-end pl-10 pr-2 sm:pl-8')}>
+      <div className={cn('flex items-start space-x-3 py-3 animate-pulse', !isUser ? 'justify-start' : 'justify-end pl-10 pr-2 sm:pl-12')}>
         {!isUser && (
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 shrink-0">
             <AvatarFallback className="bg-muted">
               <Bot className="h-4 w-4 text-muted-foreground" />
             </AvatarFallback>
@@ -30,7 +31,7 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
           </div>
         </div>
          {isUser && (
-          <Avatar className="h-8 w-8 self-start">
+          <Avatar className="h-8 w-8 self-start shrink-0">
              <AvatarFallback className="bg-muted">
                 <User className="h-4 w-4 text-muted-foreground" />
             </AvatarFallback>
@@ -45,8 +46,8 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
   return (
     <div
       className={cn(
-        'flex items-end space-x-3 py-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-300',
-        isUser ? 'justify-end pl-10 pr-2 sm:pl-8' : 'justify-start pr-10 pl-2 sm:pr-8'
+        'flex items-end space-x-3 py-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-300', // Reduced py
+        isUser ? 'justify-end pl-10 pr-2 sm:pl-12' : 'justify-start pr-10 pl-2 sm:pr-12' // Increased side padding slightly
       )}
     >
       {!isUser && (
@@ -58,11 +59,13 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
       )}
       <div
         className={cn(
-          'max-w-[75%] sm:max-w-[70%] rounded-lg p-3', 
-          isUser ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-card text-card-foreground rounded-bl-none'
+          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3 text-sm', // Use larger border radius, consistent text size
+          isUser 
+            ? 'bg-primary text-primary-foreground' 
+            : 'bg-card text-card-foreground border border-border/50' // Assistant bubble now more distinct card
         )}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words">{message.content}</p>
         {message.timestamp && (
            <p className={cn(
              "text-xs mt-1.5",

@@ -1,18 +1,20 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import type { Message } from '@/types/chat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
-import { ThemeToggle } from '@/components/chat/ThemeToggle';
 import { useToast } from "@/hooks/use-toast";
-import { Bot } from 'lucide-react';
-
+import { SidebarInset } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const SYSTEM_MESSAGE: Message = {
   id: 'system-prompt',
   role: 'system',
-  content: 'You are ChimpChat, a helpful and friendly assistant.',
+  content: 'You are ChimpChat, a helpful and friendly assistant, inspired by Gemini.',
   timestamp: new Date(),
 };
 
@@ -20,8 +22,22 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    // Show welcome message only after a brief delay to allow initial render
+    // and prevent flash if messages load quickly.
+    const timer = setTimeout(() => {
+      if (messages.length === 0 && !isLoading) {
+        setShowWelcome(true);
+      }
+    }, 100); // Small delay
+    return () => clearTimeout(timer);
+  }, [messages.length, isLoading]);
+
 
   const handleSendMessage = async (content: string) => {
+    setShowWelcome(false); // Hide welcome message on send
     const newUserMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -41,7 +57,6 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           messages: messagesForApi,
-          model: 'gpt-3.5-turbo', // Example model
         }),
       });
 
@@ -84,30 +99,51 @@ export default function ChatPage() {
     }
   };
   
-  // Add an initial greeting message from the bot
-  useEffect(() => {
-    setMessages([
-      {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: "Hello! I'm ChimpChat. How can I help you today?",
-        timestamp: new Date()
-      }
-    ]);
-  }, []);
+  // Initial bot greeting is now handled by the welcome message logic
+  // or if you prefer, can be the first message added.
+  // For Gemini style, it's better to have the "Hello" prompt.
+  // useEffect(() => {
+  //   setMessages([
+  //     {
+  //       id: crypto.randomUUID(),
+  //       role: 'assistant',
+  //       content: "Hello! I'm ChimpChat. How can I help you today?",
+  //       timestamp: new Date()
+  //     }
+  //   ]);
+  // }, []);
 
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
-      <header className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background z-10">
+    <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
+      {/* Top bar within the main content area */}
+      <header className="flex items-center justify-end p-3 border-b border-border sticky top-0 bg-background z-10 h-[60px]">
         <div className="flex items-center space-x-2">
-          <Bot className="h-7 w-7 text-primary" />
-          <h1 className="text-xl font-semibold text-foreground">ChimpChat</h1>
+          <Button variant="outline" size="sm" className="text-sm">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Upgrade
+          </Button>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <CircleUserRound className="h-5 w-5" />
+          </Button>
         </div>
-        <ThemeToggle />
       </header>
-      <ChatWindow messages={messages} isLoading={isLoading} />
+      
+      <div className="flex-grow flex flex-col relative">
+        {showWelcome && messages.length === 0 && !isLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0">
+            <Bot className="h-16 w-16 text-muted-foreground mb-6" />
+            <h2 
+              className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
+            >
+              Hello, I'm ChimpChat
+            </h2>
+            <p className="text-muted-foreground mt-2 text-center">How can I help you today?</p>
+          </div>
+        )}
+        <ChatWindow messages={messages} isLoading={isLoading} />
+      </div>
       <InputBar onSendMessage={handleSendMessage} isLoading={isLoading} />
-    </div>
+    </SidebarInset>
   );
 }
