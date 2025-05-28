@@ -27,17 +27,17 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContext = {
+type SidebarContextValue = {
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
-  isMobile: boolean
+  isMobile: boolean | undefined // Allow undefined
   toggleSidebar: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+const SidebarContext = React.createContext<SidebarContextValue | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -71,8 +71,6 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
     const setOpen = React.useCallback(
@@ -83,21 +81,21 @@ const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
-
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        if (typeof window !== 'undefined') {
+            document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        }
       },
       [setOpenProp, open]
     )
 
-    // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open)
+      if (isMobile) {
+        setOpenMobile((currentOpen) => !currentOpen)
+      } else {
+        setOpen((currentOpen) => !currentOpen)
+      }
     }, [isMobile, setOpen, setOpenMobile])
 
-    // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
@@ -108,16 +106,15 @@ const SidebarProvider = React.forwardRef<
           toggleSidebar()
         }
       }
-
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
+      if (typeof window !== 'undefined') {
+        window.addEventListener("keydown", handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
+      }
     }, [toggleSidebar])
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContext>(
+    const contextValue = React.useMemo<SidebarContextValue>(
       () => ({
         state,
         open,
@@ -178,6 +175,22 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
+    // Handle initial undefined state for isMobile to prevent hydration mismatch
+    if (isMobile === undefined) {
+      // Render nothing or a placeholder that's consistent between server and client's first render
+      // For a sidebar, often a simple div with the collapsed width or null is fine.
+      // To avoid layout shifts, a placeholder with collapsed width might be best if it's part of flow.
+      // If absolutely positioned and won't affect layout, null is simpler.
+      // Let's return a minimal placeholder consistent with collapsed state for now.
+      if (collapsible === "icon" && (variant === "floating" || variant === "inset")){
+        return <div className="w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)] h-svh hidden md:block" />;
+      }
+      if (collapsible === "icon" && variant === "sidebar"){
+         return <div className="w-[var(--sidebar-width-icon)] h-svh hidden md:block" />;
+      }
+      return null; 
+    }
+
     if (collapsible === "none") {
       return (
         <div
@@ -212,7 +225,8 @@ const Sidebar = React.forwardRef<
         </Sheet>
       )
     }
-
+    
+    // Desktop view
     return (
       <div
         ref={ref}
@@ -222,7 +236,6 @@ const Sidebar = React.forwardRef<
         data-variant={variant}
         data-side={side}
       >
-        {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
@@ -239,7 +252,6 @@ const Sidebar = React.forwardRef<
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Adjust the padding for floating and inset variants.
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
@@ -262,9 +274,9 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
   HTMLButtonElement,
-  ButtonProps // Use ButtonProps which includes asChild and children
+  ButtonProps 
 >(({ className, onClick, asChild, children, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, isMobile } = useSidebar();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (onClick) {
@@ -272,20 +284,19 @@ const SidebarTrigger = React.forwardRef<
     }
     toggleSidebar();
   };
+  
+  // Do not render trigger if isMobile state is not yet determined (to prevent flash of desktop trigger on mobile)
+  if (isMobile === undefined && props?.asChild !== true) { // if asChild, let child decide.
+      return <Button variant="ghost" size="icon" className={cn("h-7 w-7 invisible", className)} disabled />;
+  }
+
 
   if (asChild && children) {
-    // When asChild is true, SidebarTrigger becomes a Slot.
-    // It clones its 'children' prop and passes 'props' and 'handleClick'.
     return (
       <Slot
         ref={ref}
         onClick={handleClick}
-        // Pass down props like variant, size if they are intended for the child
-        // The original SidebarTrigger hardcoded variant="ghost" size="icon"
-        // If asChild, the child is responsible for its own variant/size.
-        // We spread `props` which might include variant, size from the user of SidebarTrigger.
         {...props}
-        // className from SidebarTrigger usage should also be passed if desired
         className={className}
       >
         {children}
@@ -293,16 +304,15 @@ const SidebarTrigger = React.forwardRef<
     );
   }
 
-  // Default rendering: a Button with PanelLeft icon
   return (
     <Button
       ref={ref}
       data-sidebar="trigger"
-      variant="ghost" // Default variant
-      size="icon"    // Default size
-      className={cn("h-7 w-7", className)} // Default styling + user-provided className
+      variant="ghost" 
+      size="icon"    
+      className={cn("h-7 w-7", className)} 
       onClick={handleClick}
-      {...props} // Pass other button props (e.g., aria-label)
+      {...props} 
     >
       <PanelLeft />
       <span className="sr-only">Toggle Sidebar</span>
@@ -487,7 +497,6 @@ const SidebarGroupAction = React.forwardRef<
       data-sidebar="group-action"
       className={cn(
         "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "group-data-[collapsible=icon]:hidden",
         className
@@ -605,6 +614,9 @@ const SidebarMenuButton = React.forwardRef<
         children: tooltip,
       }
     }
+    
+    const shouldShowTooltip = state === "collapsed" && isMobile === false;
+
 
     return (
       <Tooltip>
@@ -612,7 +624,7 @@ const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          hidden={state !== "collapsed" || isMobile}
+          hidden={!shouldShowTooltip} // control visibility
           {...tooltip}
         />
       </Tooltip>
@@ -636,7 +648,6 @@ const SidebarMenuAction = React.forwardRef<
       data-sidebar="menu-action"
       className={cn(
         "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "peer-data-[size=sm]/menu-button:top-1",
         "peer-data-[size=default]/menu-button:top-1.5",
@@ -679,7 +690,6 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
   const width = React.useMemo(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`
   }, [])
@@ -790,5 +800,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
-    
