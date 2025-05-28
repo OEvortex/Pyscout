@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/chat/ThemeToggle';
-import { ModelSelector } from '@/components/chat/ModelSelector';
+// import { ModelSelector } from '@/components/chat/ModelSelector'; // Removed from here
 import { Button } from '@/components/ui/button';
 import { Menu, SquarePen, Bot } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -41,10 +41,7 @@ export function AppSidebar() {
            <h1 className="text-2xl font-semibold text-sidebar-foreground">ChimpChat</h1>
         </div>
 
-        {/* Row 3: ModelSelector div - adapts to collapsed state */}
-        <div className="w-full group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:pt-1">
-          <ModelSelector />
-        </div>
+        {/* Row 3: ModelSelector was here, now removed */}
       </SidebarHeader>
 
       <SidebarContent className="p-2">

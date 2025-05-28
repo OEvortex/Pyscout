@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import type { Message } from '@/types/chat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
+import { ModelSelector } from '@/components/chat/ModelSelector'; // New import
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -42,8 +43,6 @@ export default function ChatPage() {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true); 
-      // Clean up URL params by replacing the current entry in history
-      // Using a minimal path like '/' or the current pathname
       const currentPath = window.location.pathname;
       router.replace(currentPath, { scroll: false });
     }
@@ -71,7 +70,7 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           messages: messagesForApi,
-          // Future: Pass selectedModelId here
+          // Future: Pass selectedModelId from ModelSelector here
         }),
       });
 
@@ -117,8 +116,7 @@ export default function ChatPage() {
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
       <header className="flex items-center justify-between p-3 border-b border-border sticky top-0 bg-background z-10 h-[60px]">
-        {/* Placeholder for potential future model display in header for mobile/compact views */}
-        <div></div>
+        <ModelSelector /> {/* ModelSelector added here */}
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="text-sm">
             <Sparkles className="mr-2 h-4 w-4" />
