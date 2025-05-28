@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation'; // Added useSearchParams and useRouter
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE: Message = {
   id: 'system-prompt',
@@ -22,37 +22,36 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [showWelcome, setShowWelcome] = useState(false); // Initialize to false
+  const [showWelcome, setShowWelcome] = useState(false); 
 
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Show welcome message only after a brief delay to allow initial render
-    // and prevent flash if messages load quickly.
     const timer = setTimeout(() => {
       if (messages.length === 0 && !isLoading) {
         setShowWelcome(true);
       }
-    }, 100); // Small delay
+    }, 100); 
     return () => clearTimeout(timer);
   }, [messages.length, isLoading]);
 
-  // Effect to handle "New Chat" functionality via URL params
   useEffect(() => {
     const newChatParam = searchParams.get('newChat');
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
-      setShowWelcome(true); // Explicitly show welcome
-      // Clean up URL params without adding to history
-      router.replace('/', { scroll: false });
+      setShowWelcome(true); 
+      // Clean up URL params by replacing the current entry in history
+      // Using a minimal path like '/' or the current pathname
+      const currentPath = window.location.pathname;
+      router.replace(currentPath, { scroll: false });
     }
   }, [searchParams, router]);
 
 
   const handleSendMessage = async (content: string) => {
-    setShowWelcome(false); // Hide welcome message on send
+    setShowWelcome(false); 
     const newUserMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -72,6 +71,7 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           messages: messagesForApi,
+          // Future: Pass selectedModelId here
         }),
       });
 
@@ -116,8 +116,9 @@ export default function ChatPage() {
   
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
-      {/* Top bar within the main content area */}
-      <header className="flex items-center justify-end p-3 border-b border-border sticky top-0 bg-background z-10 h-[60px]">
+      <header className="flex items-center justify-between p-3 border-b border-border sticky top-0 bg-background z-10 h-[60px]">
+        {/* Placeholder for potential future model display in header for mobile/compact views */}
+        <div></div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="text-sm">
             <Sparkles className="mr-2 h-4 w-4" />
@@ -147,4 +148,3 @@ export default function ChatPage() {
     </SidebarInset>
   );
 }
-
