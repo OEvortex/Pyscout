@@ -9,17 +9,21 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE_CONTENT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+
+const SUGGESTION_CARDS = [
+  // Suggestions removed as per previous request
+];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(false);
-  const [currentModel, setCurrentModel] = useState<Model | null>(null); // Changed from currentModelId
+  const [currentModel, setCurrentModel] = useState<Model | null>(null); 
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,16 +43,17 @@ export default function ChatPage() {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true);
+      // Clean up URL
       const currentPath = window.location.pathname;
       router.replace(currentPath, { scroll: false }); 
     }
   }, [searchParams, router]);
 
-  const handleModelChange = useCallback((model: Model) => { // Expects full Model object
+  const handleModelChange = useCallback((model: Model) => { 
     setCurrentModel(model);
   }, []);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, isSuggestionClick = false) => {
     if (!currentModel) {
       toast({
         title: "Model Not Selected",
@@ -72,7 +77,7 @@ export default function ChatPage() {
       { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
       ...messages.map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: newUserMessage.content }
-    ];
+    ].filter(msg => msg.content.trim() !== ''); // Ensure no empty messages are sent
 
     const botMessageId = crypto.randomUUID();
     const initialBotMessage: Message = {
@@ -98,13 +103,31 @@ export default function ChatPage() {
           messages: messagesForApi,
           temperature: 0.7,
           max_tokens: 250, 
-          stream: shouldUseStream, // Conditional streaming
+          stream: shouldUseStream,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: `HTTP error! status: ${response.status}` }));
-        throw new Error(errorData.error?.message || errorData.error || `HTTP error! status: ${response.status}`);
+        let apiErrorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (typeof errorData === 'string') {
+            apiErrorMessage = errorData;
+          } else if (errorData) {
+            const messageFromServer = errorData.error?.message || 
+                                    errorData.error || 
+                                    errorData.message || 
+                                    errorData.detail;
+            if (typeof messageFromServer === 'string') {
+              apiErrorMessage = messageFromServer;
+            } else if (messageFromServer) { // If it's an object/array (e.g. FastAPI validation detail)
+              apiErrorMessage = JSON.stringify(messageFromServer);
+            }
+          }
+        } catch (e) {
+          // Failed to parse JSON, stick with the HTTP status error
+        }
+        throw new Error(apiErrorMessage);
       }
 
       if (shouldUseStream) {
@@ -139,7 +162,7 @@ export default function ChatPage() {
                   const choice = parsed.choices?.[0];
                   if (choice) {
                     const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
-                    if (deltaContent.length > 0) {
+                    if (deltaContent) { // Ensure deltaContent is not empty before appending
                       accumulatedResponse += deltaContent;
                       setMessages((prevMessages) =>
                         prevMessages.map((msg) =>
@@ -156,15 +179,16 @@ export default function ChatPage() {
                   }
                 } catch (e) {
                   console.error('Error parsing stream data:', e, jsonDataString);
+                  // Potentially update UI with a stream parsing error
                 }
               }
             }
           }
         }
-      } else { // Handle non-streaming response
+      } else { 
         const data = await response.json();
         const botResponseContent = data.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
-        accumulatedResponse = botResponseContent; // For consistency, though it's set in one go
+        accumulatedResponse = botResponseContent; 
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === botMessageId
@@ -190,8 +214,14 @@ export default function ChatPage() {
       );
     } finally {
       setIsLoading(false);
+      if (isSuggestionClick && textareaRef.current) {
+         textareaRef.current.focus();
+      }
     }
   };
+  
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
 
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
@@ -225,11 +255,17 @@ export default function ChatPage() {
                 Hello, I'm PyscoutAI
               </h2>
             </div>
+            {/* Suggestion cards removed */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
       </div>
-      <InputBar onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <InputBar onSendMessage={handleSendMessage} isLoading={isLoading} textareaRef={textareaRef} />
     </SidebarInset>
   );
 }
+
+// Helper function for suggestion card click (if ever re-added)
+// function handleSuggestionClick(suggestion: string, sendMessageFn: (content: string, isSuggestionClick: boolean) => void) {
+//   sendMessageFn(suggestion, true);
+// }

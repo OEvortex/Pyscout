@@ -1,6 +1,7 @@
 
 "use client";
 
+import React from 'react'; // Import React
 import type { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -11,7 +12,8 @@ interface MessageBubbleProps {
   isShimmer?: boolean;
 }
 
-export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps) {
+// Wrap MessageBubble with React.memo for performance optimization
+export const MessageBubble = React.memo(function MessageBubble({ message, isShimmer = false }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
   if (isShimmer) {
@@ -25,7 +27,7 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
           </Avatar>
         )}
         <div className={cn('max-w-[75%] sm:max-w-[70%]')}>
-          <div className="bg-muted rounded-lg p-3 space-y-2">
+          <div className="bg-muted rounded-xl p-3 space-y-2"> {/* Ensure rounded-xl for shimmer too */}
             <div className="h-4 bg-muted-foreground/30 rounded w-3/4"></div>
             <div className="h-4 bg-muted-foreground/30 rounded w-1/2"></div>
           </div>
@@ -41,13 +43,15 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
     );
   }
   
-  if (!message.content) return null;
+  if (!message.content && message.role === 'assistant' && !isLoading) return null; // Hide empty assistant bubbles if not loading
+  if (!message.content && message.role !== 'assistant') return null; // Hide other empty non-assistant bubbles
+
 
   return (
     <div
       className={cn(
-        'flex items-end space-x-3 py-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-300', // Reduced py
-        isUser ? 'justify-end pl-10 pr-2 sm:pl-12' : 'justify-start pr-10 pl-2 sm:pr-12' // Increased side padding slightly
+        'flex items-end space-x-3 py-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-300', 
+        isUser ? 'justify-end pl-10 pr-2 sm:pl-12' : 'justify-start pr-10 pl-2 sm:pr-12' 
       )}
     >
       {!isUser && (
@@ -59,10 +63,10 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
       )}
       <div
         className={cn(
-          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3 text-sm', // Use larger border radius, consistent text size
+          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3 text-sm', 
           isUser 
             ? 'bg-primary text-primary-foreground' 
-            : 'bg-card text-card-foreground border border-border/50' // Assistant bubble now more distinct card
+            : 'bg-card text-card-foreground border border-border/50' 
         )}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
@@ -84,4 +88,10 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
       )}
     </div>
   );
+});
+
+// Add prop for isLoading to MessageBubble (if needed explicitly, though ChatWindow passes it)
+// This is mainly for the shimmer effect logic, not direct rendering of content.
+interface ExtendedMessageBubbleProps extends MessageBubbleProps {
+  isLoading?: boolean; 
 }

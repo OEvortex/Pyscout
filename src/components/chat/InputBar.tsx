@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Image as ImageIcon, Brain, GalleryVerticalEnd, Mic } from 'lucide-react'; // Updated Video to ImageIcon
+import { Plus, Image as ImageIcon, Brain, GalleryVerticalEnd, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from "@/hooks/use-toast";
@@ -13,13 +13,15 @@ import { useToast } from "@/hooks/use-toast";
 interface InputBarProps {
   onSendMessage: (content: string) => void;
   isLoading: boolean;
+  textareaRef?: React.RefObject<HTMLTextAreaElement>; // Make textareaRef optional or ensure it's always passed
 }
 
 const MAX_TEXTAREA_HEIGHT = 180; 
 
-export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
+export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextareaRef }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = externalTextareaRef || internalTextareaRef; // Use external if provided, else internal
   const { toast } = useToast();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -27,7 +29,8 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     autoResizeTextarea(event.target);
   };
   
-  const autoResizeTextarea = (element: HTMLTextAreaElement) => {
+  const autoResizeTextarea = (element: HTMLTextAreaElement | null) => {
+    if (!element) return;
     element.style.height = 'auto'; 
     const scrollHeight = element.scrollHeight;
     if (scrollHeight > MAX_TEXTAREA_HEIGHT) {
@@ -40,10 +43,11 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
   };
 
   useEffect(() => {
+    // Auto-resize on initial load if there's pre-filled text (not typical for chat but good practice)
     if (textareaRef.current) {
       autoResizeTextarea(textareaRef.current);
     }
-  }, []);
+  }, []); // Empty dependency array: run once on mount
 
 
   const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -52,8 +56,11 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
       onSendMessage(inputValue.trim());
       setInputValue('');
       if (textareaRef.current) {
+        // Reset height after sending
         textareaRef.current.style.height = 'auto'; 
         textareaRef.current.style.overflowY = 'hidden';
+        // Ensure it resizes to minimum if it became scrollable then emptied
+        autoResizeTextarea(textareaRef.current); 
       }
     }
   };
@@ -76,12 +83,12 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     <form 
       onSubmit={handleSubmit} 
       className={cn(
-        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group",
+        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group", // Added group class here
       )}
     >
       <div className={cn(
-        "bg-card text-card-foreground p-3 rounded-xl border border-input shadow-xl flex flex-col gap-2.5", // Rounded-xl, increased gap
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50"
+        "bg-card text-card-foreground p-3 rounded-xl border border-input shadow-xl flex flex-col gap-2.5", 
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50" // Animation classes
       )}>
         <div className="flex items-end space-x-2">
           <Textarea
@@ -105,6 +112,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
                   className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-foreground disabled:bg-muted disabled:text-muted-foreground self-end flex items-center justify-center shrink-0"
                   aria-label="Voice input (placeholder)"
                   disabled={isLoading}
+                  onClick={() => showComingSoonToast("Voice input")}
                 >
                   <Mic className="h-5 w-5" />
                 </Button>
@@ -126,17 +134,18 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
                     className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg disabled:opacity-50 transition-colors duration-150"
                     disabled={isLoading}
                     aria-label="Attach"
+                     onClick={() => showComingSoonToast("Attach file")}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                </TooltipTrigger>
-               <TooltipContent side="top"><p>Attach</p></TooltipContent>
+               <TooltipContent side="top"><p>Attach file</p></TooltipContent>
              </Tooltip>
            </TooltipProvider>
           {[
-            { icon: ImageIcon, label: "Image", tip: "Process image (placeholder)", action: () => showComingSoonToast("Image Processing") },
-            { icon: Brain, label: "Deep Research", tip: "Deep research (placeholder)", action: () => showComingSoonToast("Deep Research") },
-            { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas (placeholder)", action: () => showComingSoonToast("Canvas") },
+            { icon: ImageIcon, label: "Image", tip: "Process image", action: () => showComingSoonToast("Image Processing") },
+            { icon: Brain, label: "Deep Research", tip: "Deep research", action: () => showComingSoonToast("Deep Research") },
+            { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas", action: () => showComingSoonToast("Canvas") },
           ].map((item, index) => (
             <TooltipProvider key={index}>
               <Tooltip>
@@ -165,3 +174,4 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     </form>
   );
 }
+
