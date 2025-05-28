@@ -1,20 +1,24 @@
 
 "use client";
 
-import React from 'react'; // Import React
+import React, { useState, useEffect } from 'react'; // Import React, useState, useEffect
 import type { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User, Bot } from 'lucide-react';
 
 interface MessageBubbleProps {
-  message: Partial<Message> & { id: string }; 
+  message: Partial<Message> & { id: string };
   isShimmer?: boolean;
 }
 
-// Wrap MessageBubble with React.memo for performance optimization
 export const MessageBubble = React.memo(function MessageBubble({ message, isShimmer = false }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   if (isShimmer) {
     return (
@@ -43,8 +47,10 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
     );
   }
   
-  if (!message.content && message.role === 'assistant' && !isLoading) return null; // Hide empty assistant bubbles if not loading
-  if (!message.content && message.role !== 'assistant') return null; // Hide other empty non-assistant bubbles
+  // Adjusted early return: Hide empty assistant bubbles if not shimmering (loading)
+  if (!message.content && message.role === 'assistant' && !isShimmer) return null; 
+  // Hide other empty non-assistant messages
+  if (!message.content && message.role !== 'assistant') return null;
 
 
   return (
@@ -70,7 +76,7 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
         )}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
-        {message.timestamp && (
+        {hasMounted && message.timestamp && ( // Only render timestamp if hasMounted is true
            <p className={cn(
              "text-xs mt-1.5",
              isUser ? "text-primary-foreground/70 text-right" : "text-muted-foreground text-left"
@@ -89,9 +95,3 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
     </div>
   );
 });
-
-// Add prop for isLoading to MessageBubble (if needed explicitly, though ChatWindow passes it)
-// This is mainly for the shimmer effect logic, not direct rendering of content.
-interface ExtendedMessageBubbleProps extends MessageBubbleProps {
-  isLoading?: boolean; 
-}
