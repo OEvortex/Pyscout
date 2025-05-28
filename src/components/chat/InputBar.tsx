@@ -67,12 +67,12 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     <form 
       onSubmit={handleSubmit} 
       className={cn(
-        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group", // Added group class
+        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group",
       )}
     >
       <div className={cn(
         "bg-card text-card-foreground p-3 rounded-3xl border border-input shadow-xl flex flex-col gap-2",
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50" // Focus within animation
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50"
       )}>
         <div className="flex items-end space-x-2">
           <Textarea
@@ -80,7 +80,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask ChimpChat..."
+            placeholder="Ask PyscoutAI..."
             className="flex-grow resize-none overflow-y-hidden p-2.5 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px]"
             rows={1}
             disabled={isLoading}
@@ -128,7 +128,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md px-2 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150" // Added transition
+                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md px-2 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150"
                     disabled={isLoading}
                     aria-label={item.label}
                   >
@@ -147,4 +147,3 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
     </form>
   );
 }
-

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ChimpChat',
+  title: 'PyscoutAI',
   description: 'A modern chatbot web app inspired by Gemini',
 };
 

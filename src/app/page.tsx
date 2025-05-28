@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import type { Message } from '@/types/chat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
-import { ModelSelector } from '@/components/chat/ModelSelector'; // New import
+import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 const SYSTEM_MESSAGE: Message = {
   id: 'system-prompt',
   role: 'system',
-  content: 'You are ChimpChat, a helpful and friendly assistant, inspired by Gemini.',
+  content: 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.',
   timestamp: new Date(),
 };
 
@@ -116,7 +116,7 @@ export default function ChatPage() {
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
       <header className="flex items-center justify-between p-3 border-b border-border sticky top-0 bg-background z-10 h-[60px]">
-        <ModelSelector /> {/* ModelSelector added here */}
+        <ModelSelector />
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="text-sm">
             <Sparkles className="mr-2 h-4 w-4" />
@@ -135,7 +135,7 @@ export default function ChatPage() {
             <h2 
               className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
             >
-              Hello, I'm ChimpChat
+              Hello, I'm PyscoutAI
             </h2>
             <p className="text-muted-foreground mt-2 text-center">How can I help you today?</p>
           </div>

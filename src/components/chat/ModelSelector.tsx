@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Check, ChevronDown, Loader2, ServerCrash, Sparkles, Bot as ModelIcon } from 'lucide-react'; // Added Sparkles, ModelIcon
+import { Check, ChevronDown, Loader2, ServerCrash, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 function parseModelName(id: string): string {
@@ -105,7 +105,11 @@ export function ModelSelector() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
-        className="w-72 sm:w-80 bg-card border-border shadow-xl" 
+        className={cn(
+            "w-72 sm:w-80 bg-card text-card-foreground border-border shadow-xl p-1", // Custom styles
+            "z-50 overflow-hidden rounded-md", // Base structure from default
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2" // Animations
+        )}
         align="start"
       >
         {isLoading && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading...</DropdownMenuLabel>}
@@ -140,7 +144,7 @@ export function ModelSelector() {
                 <div className="flex flex-col items-start px-3 py-2.5 w-full rounded-md hover:bg-accent/50 transition-colors group">
                     <div className="flex items-center w-full mb-1">
                         <Sparkles className="h-4 w-4 mr-2 text-primary group-hover:text-accent-foreground" />
-                        <p className="font-semibold text-sm text-foreground group-hover:text-accent-foreground">Upgrade to ChimpChat Pro</p>
+                        <p className="font-semibold text-sm text-foreground group-hover:text-accent-foreground">Upgrade to PyscoutAI Pro</p>
                     </div>
                     <p className="text-xs text-muted-foreground mb-2.5 group-hover:text-accent-foreground/80">Get our most capable models and features</p>
                     <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground group-hover:bg-accent-foreground group-hover:text-accent">
