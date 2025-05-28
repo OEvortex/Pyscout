@@ -27,17 +27,28 @@ interface CachedModels {
 function parseModelName(id: string): string {
   const parts = id.split('/');
   let name = parts.length > 1 ? parts.slice(1).join('/') : id;
-  // Capitalize first letter of each part for better display
   name = name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
   return name;
 }
 
-export function ModelSelector() {
+interface ModelSelectorProps {
+  selectedModelIdFromParent: string | null;
+  onModelChange: (modelId: string) => void;
+}
+
+export function ModelSelector({ selectedModelIdFromParent, onModelChange }: ModelSelectorProps) {
   const [models, setModels] = useState<Model[]>([]);
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  // Internal state to manage the dropdown's own concept of selection,
+  // which then informs the parent via onModelChange.
+  const [internalSelectedModelId, setInternalSelectedModelId] = useState<string | null>(selectedModelIdFromParent);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Sync internal state if parent changes selectedModelId (e.g. on page load if parent has a default)
+  useEffect(() => {
+    setInternalSelectedModelId(selectedModelIdFromParent);
+  }, [selectedModelIdFromParent]);
 
   const fetchAndCacheModels = useCallback(async () => {
     setIsLoading(true);
@@ -51,12 +62,28 @@ export function ModelSelector() {
       const parsedModels = data.data.map(m => ({ ...m, name: parseModelName(m.id) }));
       
       setModels(parsedModels);
-      if (parsedModels.length > 0 && !selectedModelId) {
+      // If no model is currently selected internally or passed from parent, pick a default
+      if (parsedModels.length > 0 && !internalSelectedModelId) {
         const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) || // Prioritize gpt-4o if available
                                parsedModels[0];
-        setSelectedModelId(preferredModel.id);
+        if (preferredModel) {
+            setInternalSelectedModelId(preferredModel.id);
+            onModelChange(preferredModel.id); // Notify parent of initial selection
+        }
+      } else if (parsedModels.length > 0 && internalSelectedModelId && !parsedModels.find(m => m.id === internalSelectedModelId)) {
+        // If current selection is not in new list, pick a new default
+        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                               parsedModels[0];
+        if (preferredModel) {
+            setInternalSelectedModelId(preferredModel.id);
+            onModelChange(preferredModel.id);
+        }
       }
+
 
       if (typeof window !== 'undefined') {
         localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify({ models: parsedModels, timestamp: Date.now() }));
@@ -64,10 +91,16 @@ export function ModelSelector() {
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      // If fetching fails, and we have no models, ensure parent knows no model is selected
+      if (models.length === 0 && onModelChange && internalSelectedModelId) {
+         // No reliable way to clear parent's model without more complex state.
+         // Parent should handle null currentModelId if this fails.
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [selectedModelId]); // Keep selectedModelId dependency
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onModelChange]); // internalSelectedModelId removed to avoid re-fetch loops on its own change. Parent syncs it.
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -78,11 +111,15 @@ export function ModelSelector() {
           if (Date.now() - cachedData.timestamp < CACHE_DURATION_MS && cachedData.models.length > 0) {
             const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
             setModels(parsedCachedModels);
-            if (!selectedModelId && parsedCachedModels.length > 0) {
+            if (!internalSelectedModelId && parsedCachedModels.length > 0) {
               const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                      parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
+                                     parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                      parsedCachedModels[0];
-              setSelectedModelId(preferredModel.id);
+              if (preferredModel) {
+                setInternalSelectedModelId(preferredModel.id);
+                onModelChange(preferredModel.id); // Notify parent
+              }
             }
             setIsLoading(false);
             return; 
@@ -94,15 +131,16 @@ export function ModelSelector() {
       }
     }
     fetchAndCacheModels();
-  }, [fetchAndCacheModels, selectedModelId]);
+  }, [fetchAndCacheModels, internalSelectedModelId, onModelChange]);
 
 
   const handleModelSelect = (modelId: string) => {
-    setSelectedModelId(modelId);
+    setInternalSelectedModelId(modelId);
+    onModelChange(modelId); // Notify parent of the change
     setIsOpen(false); 
   };
 
-  const selectedModel = models.find(m => m.id === selectedModelId);
+  const selectedModelForDisplay = models.find(m => m.id === internalSelectedModelId);
   
   let triggerContent: React.ReactNode;
   let triggerDisabled = false;
@@ -129,7 +167,7 @@ export function ModelSelector() {
   } else {
     triggerContent = (
       <>
-        <span className="text-sm font-medium">{selectedModel?.name || 'Select Model'}</span>
+        <span className="text-sm font-medium">{selectedModelForDisplay?.name || 'Select Model'}</span>
         <span className="text-sm text-muted-foreground ml-1">(preview)</span>
         <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200", isOpen && "rotate-180")} />
       </>
@@ -143,7 +181,7 @@ export function ModelSelector() {
           variant="ghost"
           className="flex items-center px-1.5 py-1 h-auto rounded-md hover:bg-accent/20 data-[state=open]:bg-accent/30 focus-visible:ring-1 focus-visible:ring-ring"
           disabled={triggerDisabled}
-          aria-label={`Selected model: ${selectedModel?.name || 'Select Model'}`}
+          aria-label={`Selected model: ${selectedModelForDisplay?.name || 'Select Model'}`}
         >
           {triggerContent}
         </Button>
@@ -154,7 +192,7 @@ export function ModelSelector() {
             "z-50 rounded-lg", 
             "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
         )}
-        align="start" // Gemini style often aligns start
+        align="start"
       >
         {isLoading && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
         {error && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
@@ -170,18 +208,18 @@ export function ModelSelector() {
                     key={model.id}
                     onSelect={() => handleModelSelect(model.id)}
                     className={cn(
-                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground", // Slightly more padding
-                      selectedModelId === model.id && "bg-accent text-accent-foreground"
+                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground",
+                      internalSelectedModelId === model.id && "bg-accent text-accent-foreground"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col">
-                        <span className={cn("font-medium", selectedModelId === model.id && "text-primary")}>{model.name}</span>
+                        <span className={cn("font-medium", internalSelectedModelId === model.id && "text-primary")}>{model.name}</span>
                         <span className="text-xs text-muted-foreground/80 mt-0.5">
                           Owned by: {model.owned_by}
                         </span>
                       </div>
-                      {selectedModelId === model.id && <Check className="h-4 w-4 ml-2 text-primary shrink-0" />}
+                      {internalSelectedModelId === model.id && <Check className="h-4 w-4 ml-2 text-primary shrink-0" />}
                     </div>
                   </DropdownMenuItem>
                 ))}
@@ -206,3 +244,4 @@ export function ModelSelector() {
     </DropdownMenu>
   );
 }
+
