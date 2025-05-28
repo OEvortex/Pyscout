@@ -44,7 +44,8 @@ export default function ChatPage() {
       setIsLoading(false);
       setShowWelcome(true); 
       const currentPath = window.location.pathname;
-      router.replace(currentPath, { scroll: false });
+      // Replace the current entry in the history stack to remove query params
+      router.replace(currentPath, { scroll: false }); 
     }
   }, [searchParams, router]);
 
@@ -130,7 +131,7 @@ export default function ChatPage() {
       
       <div className="flex-grow flex flex-col relative">
         {showWelcome && messages.length === 0 && !isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in duration-500 ease-out">
             <Bot className="h-16 w-16 text-muted-foreground mb-6" />
             <h2 
               className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
