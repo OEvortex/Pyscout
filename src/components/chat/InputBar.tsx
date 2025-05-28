@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, CornerDownLeft } from 'lucide-react';
+import { Send } from 'lucide-react'; // Removed CornerDownLeft as it's not used
 import { cn } from '@/lib/utils';
 
 interface InputBarProps {
@@ -50,6 +50,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'; // Reset height after send
         textareaRef.current.style.overflowY = 'hidden';
+        textareaRef.current.focus(); // Re-focus after sending
       }
     }
   };
@@ -62,14 +63,20 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end space-x-2 p-4 border-t bg-background">
+    <form 
+      onSubmit={handleSubmit} 
+      className={cn(
+        "flex items-end space-x-2 p-3 border-t bg-background transition-all duration-150",
+        "ring-1 ring-inset ring-transparent focus-within:ring-primary rounded-t-lg" // Added subtle ring and rounded top
+      )}
+    >
       <Textarea
         ref={textareaRef}
         value={inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         placeholder="Type your message..."
-        className="flex-grow resize-none overflow-y-hidden p-3 rounded-lg shadow-sm focus-visible:ring-1 focus-visible:ring-ring bg-card text-card-foreground max-h-[200px]"
+        className="flex-grow resize-none overflow-y-hidden p-3 rounded-lg shadow-sm focus-visible:ring-0 focus-visible:ring-offset-0 bg-card text-card-foreground max-h-[200px] border-0" // Removed default border and focus ring
         rows={1}
         disabled={isLoading}
         aria-label="Chat message input"
@@ -78,7 +85,7 @@ export function InputBar({ onSendMessage, isLoading }: InputBarProps) {
         type="submit" 
         disabled={isLoading || !inputValue.trim()} 
         size="icon" 
-        className="h-full aspect-square p-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground disabled:bg-muted disabled:text-muted-foreground transition-transform hover:scale-105 active:scale-95"
+        className="h-11 w-11 p-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground disabled:bg-muted disabled:text-muted-foreground transition-transform hover:scale-105 active:scale-95 self-end" // Ensured button aligns well
         aria-label="Send message"
       >
         <Send className="h-5 w-5" />

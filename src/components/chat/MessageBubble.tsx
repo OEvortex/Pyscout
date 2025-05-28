@@ -2,7 +2,7 @@
 
 import type { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'; // Removed AvatarImage as it's not used
 import { User, Bot } from 'lucide-react';
 
 interface MessageBubbleProps {
@@ -15,7 +15,7 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
 
   if (isShimmer) {
     return (
-      <div className={cn('flex items-start space-x-3 py-3 animate-pulse', !isUser ? 'justify-start' : 'justify-end pl-8')}>
+      <div className={cn('flex items-start space-x-3 py-3 animate-pulse', !isUser ? 'justify-start' : 'justify-end pl-10 pr-2 sm:pl-8')}>
         {!isUser && (
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-muted">
@@ -23,29 +23,34 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
             </AvatarFallback>
           </Avatar>
         )}
-        <div className={cn('max-w-[70%]')}>
-          <div className="bg-muted rounded-lg p-3 space-y-2">
+        <div className={cn('max-w-[75%] sm:max-w-[70%]')}>
+          <div className="bg-muted rounded-xl p-3 space-y-2"> {/* Changed to rounded-xl */}
             <div className="h-4 bg-muted-foreground/30 rounded w-3/4"></div>
             <div className="h-4 bg-muted-foreground/30 rounded w-1/2"></div>
           </div>
         </div>
+         {isUser && (
+          <Avatar className="h-8 w-8 self-start">
+             <AvatarFallback className="bg-muted">
+                <User className="h-4 w-4 text-muted-foreground" />
+            </AvatarFallback>
+          </Avatar>
+        )}
       </div>
     );
   }
   
-  // This component won't render if message.content is undefined (which it shouldn't be if not shimmer)
   if (!message.content) return null;
-
 
   return (
     <div
       className={cn(
         'flex items-end space-x-3 py-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-300',
-        isUser ? 'justify-end pl-8' : 'justify-start pr-8'
+        isUser ? 'justify-end pl-10 pr-2 sm:pl-8' : 'justify-start pr-10 pl-2 sm:pr-8' // Adjusted padding for smaller screens
       )}
     >
       {!isUser && (
-        <Avatar className="h-8 w-8 self-start">
+        <Avatar className="h-8 w-8 self-start shrink-0">
           <AvatarFallback className="bg-primary text-primary-foreground">
             <Bot className="h-4 w-4" />
           </AvatarFallback>
@@ -53,14 +58,14 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
       )}
       <div
         className={cn(
-          'max-w-[70%] rounded-lg p-3 shadow-md',
+          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3 shadow-md', // Changed to rounded-xl
           isUser ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-card text-card-foreground rounded-bl-none'
         )}
       >
         <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
         {message.timestamp && (
            <p className={cn(
-             "text-xs mt-1",
+             "text-xs mt-1.5", // Increased margin-top slightly
              isUser ? "text-primary-foreground/70 text-right" : "text-muted-foreground text-left"
             )}>
              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -68,7 +73,7 @@ export function MessageBubble({ message, isShimmer = false }: MessageBubbleProps
         )}
       </div>
       {isUser && (
-         <Avatar className="h-8 w-8 self-start">
+         <Avatar className="h-8 w-8 self-start shrink-0">
           <AvatarFallback className="bg-accent text-accent-foreground">
             <User className="h-4 w-4" />
           </AvatarFallback>
