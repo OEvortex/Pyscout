@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Message } from '@/types/chat';
+import type { Message, Model } from '@/types/chat'; // Added Model type
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
@@ -19,7 +19,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(false);
-  const [currentModelId, setCurrentModelId] = useState<string | null>(null);
+  const [currentModel, setCurrentModel] = useState<Model | null>(null); // Changed from currentModelId
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,22 +39,17 @@ export default function ChatPage() {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true);
-      // Clean up URL query parameters
       const currentPath = window.location.pathname;
       router.replace(currentPath, { scroll: false }); 
     }
   }, [searchParams, router]);
 
-  const handleModelChange = useCallback((modelId: string) => {
-    setCurrentModelId(modelId);
-    // Optional: Clear chat when model changes, or notify user
-    // setMessages([]); 
-    // setShowWelcome(true);
-    // toast({ title: "Model Changed", description: `Switched to ${modelId}` });
+  const handleModelChange = useCallback((model: Model) => { // Expects full Model object
+    setCurrentModel(model);
   }, []);
 
   const handleSendMessage = async (content: string) => {
-    if (!currentModelId) {
+    if (!currentModel) {
       toast({
         title: "Model Not Selected",
         description: "Please select a model from the dropdown before sending a message.",
@@ -73,24 +68,23 @@ export default function ChatPage() {
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
 
-    // Prepare messages for API, including system prompt and current conversation
     const messagesForApi = [
       { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
-      ...messages.map(m => ({ role: m.role, content: m.content })), // Include previous messages
-      { role: 'user', content: newUserMessage.content } // Add new user message
+      ...messages.map(m => ({ role: m.role, content: m.content })),
+      { role: 'user', content: newUserMessage.content }
     ];
 
     const botMessageId = crypto.randomUUID();
     const initialBotMessage: Message = {
       id: botMessageId,
       role: 'assistant',
-      content: '', // Start with empty content for streaming
+      content: '', 
       timestamp: new Date(),
     };
-    // Add the initial empty bot message to UI immediately
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
     
-    let accumulatedResponse = ""; // Accumulator for the current streaming message
+    let accumulatedResponse = "";
+    const shouldUseStream = currentModel.owned_by !== 'BLACKBOXAI';
 
     try {
       const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
@@ -100,11 +94,11 @@ export default function ChatPage() {
           'accept': 'application/json',
         },
         body: JSON.stringify({
-          model: currentModelId,
+          model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
           max_tokens: 250, 
-          stream: true,
+          stream: shouldUseStream, // Conditional streaming
         }),
       });
 
@@ -113,76 +107,80 @@ export default function ChatPage() {
         throw new Error(errorData.error?.message || errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      if (!response.body) {
-        throw new Error("Response body is null");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let streamLoop = true;
-
-      while (streamLoop) {
-        const { done, value } = await reader.read();
-        if (done) {
-          streamLoop = false;
-          break;
+      if (shouldUseStream) {
+        if (!response.body) {
+          throw new Error("Response body is null for streaming");
         }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let streamLoop = true;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const eventLines = chunk.split('\n\n');
+        while (streamLoop) {
+          const { done, value } = await reader.read();
+          if (done) {
+            streamLoop = false;
+            break;
+          }
 
-        for (const eventLine of eventLines) {
-          if (eventLine.trim() === '') continue;
+          const chunk = decoder.decode(value, { stream: true });
+          const eventLines = chunk.split('\n\n');
 
-          if (eventLine.startsWith('data: ')) {
-            const jsonDataString = eventLine.substring(5).trim();
-
-            if (jsonDataString === '[DONE]') {
-              streamLoop = false;
-              break;
-            }
-
-            if (jsonDataString) {
-              try {
-                const parsed = JSON.parse(jsonDataString);
-                const choice = parsed.choices?.[0];
-
-                if (choice) {
-                  const deltaContent = choice.delta?.content;
-                  
-                  if (typeof deltaContent === 'string' && deltaContent.length > 0) {
-                    accumulatedResponse += deltaContent;
-                    setMessages((prevMessages) =>
-                      prevMessages.map((msg) =>
-                        msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse, timestamp: new Date() }
-                          : msg
-                      )
-                    );
+          for (const eventLine of eventLines) {
+            if (eventLine.trim() === '') continue;
+            if (eventLine.startsWith('data: ')) {
+              const jsonDataString = eventLine.substring(5).trim();
+              if (jsonDataString === '[DONE]') {
+                streamLoop = false;
+                break;
+              }
+              if (jsonDataString) {
+                try {
+                  const parsed = JSON.parse(jsonDataString);
+                  const choice = parsed.choices?.[0];
+                  if (choice) {
+                    const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
+                    if (deltaContent.length > 0) {
+                      accumulatedResponse += deltaContent;
+                      setMessages((prevMessages) =>
+                        prevMessages.map((msg) =>
+                          msg.id === botMessageId
+                            ? { ...msg, content: accumulatedResponse, timestamp: new Date() }
+                            : msg
+                        )
+                      );
+                    }
+                    if (choice.finish_reason) {
+                      streamLoop = false;
+                      break;
+                    }
                   }
-
-                  if (choice.finish_reason) { // e.g., "stop", "length"
-                    streamLoop = false;
-                    break;
-                  }
+                } catch (e) {
+                  console.error('Error parsing stream data:', e, jsonDataString);
                 }
-              } catch (e) {
-                console.error('Error parsing stream data:', e, jsonDataString);
-                // Potentially handle malformed JSON if necessary
               }
             }
           }
         }
+      } else { // Handle non-streaming response
+        const data = await response.json();
+        const botResponseContent = data.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
+        accumulatedResponse = botResponseContent; // For consistency, though it's set in one go
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === botMessageId
+              ? { ...msg, content: botResponseContent, timestamp: new Date() }
+              : msg
+          )
+        );
       }
     } catch (error) {
-      console.error('Failed to send message or process stream:', error);
+      console.error('Failed to send message or process response:', error);
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Error",
         description: `Assistant communication failed: ${errorMessage}`,
         variant: "destructive",
       });
-      // Update the bot message with the error
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
@@ -201,7 +199,7 @@ export default function ChatPage() {
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold text-foreground">PyscoutAI</span>
           <ModelSelector 
-            selectedModelIdFromParent={currentModelId}
+            selectedModelFromParent={currentModel}
             onModelChange={handleModelChange}
           />
         </div>
@@ -227,7 +225,6 @@ export default function ChatPage() {
                 Hello, I'm PyscoutAI
               </h2>
             </div>
-            {/* Suggestion cards removed for cleaner UI as per previous request */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />

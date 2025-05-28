@@ -32,23 +32,25 @@ function parseModelName(id: string): string {
 }
 
 interface ModelSelectorProps {
-  selectedModelIdFromParent: string | null;
-  onModelChange: (modelId: string) => void;
+  selectedModelFromParent: Model | null;
+  onModelChange: (model: Model) => void;
 }
 
-export function ModelSelector({ selectedModelIdFromParent, onModelChange }: ModelSelectorProps) {
+export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelSelectorProps) {
   const [models, setModels] = useState<Model[]>([]);
-  // Internal state to manage the dropdown's own concept of selection,
-  // which then informs the parent via onModelChange.
-  const [internalSelectedModelId, setInternalSelectedModelId] = useState<string | null>(selectedModelIdFromParent);
+  const [internalSelectedModelId, setInternalSelectedModelId] = useState<string | null>(selectedModelFromParent?.id || null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Sync internal state if parent changes selectedModelId (e.g. on page load if parent has a default)
   useEffect(() => {
-    setInternalSelectedModelId(selectedModelIdFromParent);
-  }, [selectedModelIdFromParent]);
+    setInternalSelectedModelId(selectedModelFromParent?.id || null);
+  }, [selectedModelFromParent]);
+
+  const selectAndNotifyParent = useCallback((model: Model) => {
+    setInternalSelectedModelId(model.id);
+    onModelChange(model);
+  }, [onModelChange]);
 
   const fetchAndCacheModels = useCallback(async () => {
     setIsLoading(true);
@@ -62,25 +64,21 @@ export function ModelSelector({ selectedModelIdFromParent, onModelChange }: Mode
       const parsedModels = data.data.map(m => ({ ...m, name: parseModelName(m.id) }));
       
       setModels(parsedModels);
-      // If no model is currently selected internally or passed from parent, pick a default
       if (parsedModels.length > 0 && !internalSelectedModelId) {
-        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) || // Prioritize gpt-4o if available
                                parsedModels[0];
         if (preferredModel) {
-            setInternalSelectedModelId(preferredModel.id);
-            onModelChange(preferredModel.id); // Notify parent of initial selection
+            selectAndNotifyParent(preferredModel);
         }
       } else if (parsedModels.length > 0 && internalSelectedModelId && !parsedModels.find(m => m.id === internalSelectedModelId)) {
-        // If current selection is not in new list, pick a new default
-        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                parsedModels[0];
         if (preferredModel) {
-            setInternalSelectedModelId(preferredModel.id);
-            onModelChange(preferredModel.id);
+            selectAndNotifyParent(preferredModel);
         }
       }
 
@@ -91,16 +89,10 @@ export function ModelSelector({ selectedModelIdFromParent, onModelChange }: Mode
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      // If fetching fails, and we have no models, ensure parent knows no model is selected
-      if (models.length === 0 && onModelChange && internalSelectedModelId) {
-         // No reliable way to clear parent's model without more complex state.
-         // Parent should handle null currentModelId if this fails.
-      }
     } finally {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onModelChange]); // internalSelectedModelId removed to avoid re-fetch loops on its own change. Parent syncs it.
+  }, [internalSelectedModelId, selectAndNotifyParent]); 
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -112,13 +104,12 @@ export function ModelSelector({ selectedModelIdFromParent, onModelChange }: Mode
             const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
             setModels(parsedCachedModels);
             if (!internalSelectedModelId && parsedCachedModels.length > 0) {
-              const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
+              const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                                     parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                      parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
-                                     parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                      parsedCachedModels[0];
               if (preferredModel) {
-                setInternalSelectedModelId(preferredModel.id);
-                onModelChange(preferredModel.id); // Notify parent
+                selectAndNotifyParent(preferredModel);
               }
             }
             setIsLoading(false);
@@ -131,12 +122,14 @@ export function ModelSelector({ selectedModelIdFromParent, onModelChange }: Mode
       }
     }
     fetchAndCacheModels();
-  }, [fetchAndCacheModels, internalSelectedModelId, onModelChange]);
+  }, [fetchAndCacheModels, internalSelectedModelId, selectAndNotifyParent]);
 
 
   const handleModelSelect = (modelId: string) => {
-    setInternalSelectedModelId(modelId);
-    onModelChange(modelId); // Notify parent of the change
+    const selectedModelObject = models.find(m => m.id === modelId);
+    if (selectedModelObject) {
+      selectAndNotifyParent(selectedModelObject);
+    }
     setIsOpen(false); 
   };
 
@@ -244,4 +237,3 @@ export function ModelSelector({ selectedModelIdFromParent, onModelChange }: Mode
     </DropdownMenu>
   );
 }
-
