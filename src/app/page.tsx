@@ -9,8 +9,16 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Video, Brain, GalleryVerticalEnd } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot, Image as ImageIcon, Brain, GalleryVerticalEnd, HelpCircle, LogOut, UserCog, History } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
@@ -229,7 +237,7 @@ export default function ChatPage() {
                     setMessages((prevMessages) =>
                       prevMessages.map((msg) =>
                         msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse } // Keep original timestamp
+                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } // Keep original timestamp
                           : msg
                       )
                     );
@@ -271,12 +279,17 @@ export default function ChatPage() {
     }
   };
 
+  const handleProfileMenuClick = (action: string) => {
+    // Placeholder for actual actions
+    toast({ title: "Profile Action", description: `${action} clicked (placeholder).` });
+  };
+
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
       <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px] border-b border-border/50">
         <div className="flex items-center gap-2">
           <span
-            className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+            className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent transition-all duration-300 hover:opacity-80"
           >
             PyscoutAI
           </span>
@@ -295,9 +308,34 @@ export default function ChatPage() {
             <Sparkles className="mr-2 h-4 w-4 text-primary" />
             Upgrade
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-accent/20 transition-colors duration-200">
-            <CircleUserRound className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-accent/20 transition-colors duration-200">
+                <CircleUserRound className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mr-2" align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleProfileMenuClick('Manage Account')}>
+                <UserCog className="mr-2 h-4 w-4" />
+                <span>Manage Account</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleProfileMenuClick('Activity')}>
+                <History className="mr-2 h-4 w-4" />
+                <span>Activity</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleProfileMenuClick('Help & Feedback')}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>Help & Feedback</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleProfileMenuClick('Sign Out')}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
@@ -313,6 +351,7 @@ export default function ChatPage() {
                 {currentWelcomeMessage}
               </h2>
             </div>
+            {/* Removed suggestion cards */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
