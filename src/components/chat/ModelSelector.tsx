@@ -62,7 +62,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     }
   }, [selectedModelFromParent, clientHasHydrated]);
 
-  const fetchAndCacheModels = useCallback(async () => { // Removed isClientHydrated param, relies on outer check
+  const fetchAndCacheModels = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -76,18 +76,19 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       setModels(parsedModels);
 
       if (parsedModels.length > 0 && !selectedModelFromParent) {
-        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+        const defaultModel = parsedModels.find(m => m.id === "AI4Chat/default");
+        const preferredModel = defaultModel ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
                                parsedModels[0];
         if (preferredModel) {
             setTimeout(() => onModelChange(preferredModel), 0);
         }
       } else if (parsedModels.length > 0 && selectedModelFromParent && !parsedModels.find(m => m.id === selectedModelFromParent.id)) {
-        // If current parent selection is not in the new list, select a default
-        const preferredModel = parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+        const defaultModel = parsedModels.find(m => m.id === "AI4Chat/default");
+        const preferredModel = defaultModel ||
+                               parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                               parsedModels.find(m => m.id.toLowerCase().includes('default')) ||
                                parsedModels[0];
         if (preferredModel) {
             setTimeout(() => onModelChange(preferredModel), 0);
@@ -108,12 +109,10 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
   useEffect(() => {
     const loadModels = async () => {
       if (!clientHasHydrated) {
-        // Do not set isLoading to true here if it's already true by default,
-        // to avoid potential immediate state change before hydration for the placeholder.
         return;
       }
 
-      setIsLoading(true); // Set loading true when client has hydrated and we start loading
+      setIsLoading(true); 
       setError(null);
       let loadedFromCache = false;
 
@@ -126,9 +125,10 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
               const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
               setModels(parsedCachedModels);
               if (!selectedModelFromParent && parsedCachedModels.length > 0) {
-                const preferredModel = parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
+                const defaultModel = parsedCachedModels.find(m => m.id === "AI4Chat/default");
+                const preferredModel = defaultModel ||
+                                       parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                        parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
-                                       parsedCachedModels.find(m => m.id.toLowerCase().includes('default')) ||
                                        parsedCachedModels[0];
                 if (preferredModel) {
                   setTimeout(() => onModelChange(preferredModel), 0);
@@ -180,7 +180,6 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
   let triggerContent: React.ReactNode;
   let triggerDisabled = false;
 
-  // This logic now runs only after clientHasHydrated is true
   if (isLoading && !selectedModelForDisplay && !error) {
     triggerContent = (
       <>
@@ -232,11 +231,11 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         )}
         align="start"
       >
-        {isLoading && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
-        {error && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
-        {!isLoading && !error && models.length === 0 && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
+        {isLoading && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
+        {error && clientHasHydrated && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
+        {!isLoading && !error && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
         
-        {!isLoading && !error && models.length > 0 && (
+        {!isLoading && !error && models.length > 0 && clientHasHydrated && (
           <>
             <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 pt-1 pb-2">Choose your model</DropdownMenuLabel>
             <ScrollArea viewportClassName="max-h-[260px]" className="pr-1"> 
@@ -282,5 +281,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     </DropdownMenu>
   );
 }
+
+    
 
     
