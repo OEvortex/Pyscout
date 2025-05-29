@@ -18,9 +18,15 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
 
   useEffect(() => {
     if (viewportRef.current) {
-      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
+      const viewport = viewportRef.current;
+      // Defer scroll to the end of the event loop to allow DOM updates and reflow
+      setTimeout(() => {
+        if (viewport) { // Check if viewport still exists in case component unmounted
+          viewport.scrollTop = viewport.scrollHeight;
+        }
+      }, 0);
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading]); // Rerun when messages or loading state changes
 
   // Hide chat window content if no messages and not loading to allow welcome message to be prominent
   if (messages.length === 0 && !isLoading) {
