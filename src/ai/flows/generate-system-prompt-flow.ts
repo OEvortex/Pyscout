@@ -8,12 +8,12 @@
  * - GenerateSystemPromptOutput - The return type for the generateSystemPrompt function.
  */
 
-import {z} from 'zod'; // Genkit 'z' is an alias for Zod
+import {z} from 'zod';
 
 const API_BASE_URL = 'https://ws.typegpt.net/v1';
 const MODEL_FOR_SYSTEM_PROMPT_GENERATION = 'AI4Chat/default'; // Or another suitable high-quality model
 
-export const GenerateSystemPromptInputSchema = z.object({
+const GenerateSystemPromptInputSchema = z.object({
   idea: z
     .string()
     .min(3, {message: 'Idea must be at least 3 characters long.'})
@@ -21,7 +21,7 @@ export const GenerateSystemPromptInputSchema = z.object({
 });
 export type GenerateSystemPromptInput = z.infer<typeof GenerateSystemPromptInputSchema>;
 
-export const GenerateSystemPromptOutputSchema = z.object({
+const GenerateSystemPromptOutputSchema = z.object({
   systemPrompt: z.string().describe('A well-crafted system prompt based on the user\'s idea.'),
 });
 export type GenerateSystemPromptOutput = z.infer<typeof GenerateSystemPromptOutputSchema>;
