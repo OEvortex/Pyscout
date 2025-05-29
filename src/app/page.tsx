@@ -9,13 +9,22 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Video, Brain, GalleryVerticalEnd, PlusCircle } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const API_BASE_URL = 'https://ws.typegpt.net/v1';
 
+const WELCOME_MESSAGES = [
+  "Hello, I'm PyscoutAI",
+  "How can I help you today?",
+  "Ask me anything!",
+  "Ready for your questions!",
+  "Let's explore some ideas.",
+  "Greetings! What can I do for you?",
+  "PyscoutAI at your service."
+];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -24,6 +33,7 @@ export default function ChatPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [currentModel, setCurrentModel] = useState<Model | null>(null);
   const [currentSystemPrompt, setCurrentSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState(WELCOME_MESSAGES[0]);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -45,10 +55,10 @@ export default function ChatPage() {
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
-      setShowWelcome(true);
+      setShowWelcome(true); 
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        router.replace(currentPath, { scroll: false });
+        router.replace(currentPath, { scroll: false }); 
       }
     }
   }, [searchParams, router]);
@@ -60,6 +70,14 @@ export default function ChatPage() {
       setCurrentSystemPrompt(storedPrompt || DEFAULT_SYSTEM_PROMPT);
     }
   }, []);
+
+  useEffect(() => {
+    if (showWelcome) {
+      // Select a random welcome message only on the client side after mount
+      const randomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
+      setCurrentWelcomeMessage(WELCOME_MESSAGES[randomIndex]);
+    }
+  }, [showWelcome]);
 
 
   const handleModelChange = useCallback((model: Model | null) => {
@@ -86,7 +104,6 @@ export default function ChatPage() {
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
     
-    // Refresh system prompt from localStorage before sending
     let activeSystemPrompt = DEFAULT_SYSTEM_PROMPT;
     if (typeof window !== 'undefined') {
         activeSystemPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY) || DEFAULT_SYSTEM_PROMPT;
@@ -107,14 +124,14 @@ export default function ChatPage() {
       id: botMessageId, 
       role: 'assistant',
       content: '', 
-      timestamp: initialBotMessageTimestamp, 
+      timestamp: initialBotMessageTimestamp,
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
 
     let accumulatedResponse = "";
     
     try {
-      const useStreaming = true; // Always use streaming as per previous updates
+      const useStreaming = true; 
 
       const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -126,7 +143,7 @@ export default function ChatPage() {
           model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250, // Consider making this configurable or increasing
+          max_tokens: 250, 
           stream: useStreaming,
         }),
       });
@@ -207,14 +224,13 @@ export default function ChatPage() {
                   }
                 } catch (e) {
                   console.error('Error parsing stream data:', e, jsonDataString);
-                  // Potentially add a non-fatal error message to the chat for this chunk
                 }
               }
             }
           }
-          if (!streamLoop) break; // Break outer loop if inner loop broke
+          if (!streamLoop) break; 
         }
-      } else { // Fallback for non-streaming (should not be hit if useStreaming is always true)
+      } else { 
         const responseData = await response.json();
         accumulatedResponse = responseData.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
         setMessages((prevMessages) =>
@@ -287,10 +303,9 @@ export default function ChatPage() {
               <h2
                 className="text-4xl sm:text-5xl font-medium bg-gradient-to-br from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
               >
-                Hello, I'm PyscoutAI
+                {currentWelcomeMessage}
               </h2>
             </div>
-            {/* Suggestion cards removed as per previous request */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
