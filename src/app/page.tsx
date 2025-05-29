@@ -9,7 +9,7 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot, Video, Brain, GalleryVerticalEnd } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
@@ -23,8 +23,13 @@ const WELCOME_MESSAGES = [
   "Ready for your questions!",
   "Let's explore some ideas.",
   "Greetings! What can I do for you?",
-  "PyscoutAI at your service."
+  "PyscoutAI at your service.",
+  "What's on your mind?",
+  "Let's create something amazing!",
+  "Your friendly AI assistant is here."
 ];
+
+const WELCOME_MESSAGE_INTERVAL = 6000; // 6 seconds
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,14 +60,14 @@ export default function ChatPage() {
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
-      setShowWelcome(true); 
+      setShowWelcome(true);
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        router.replace(currentPath, { scroll: false }); 
+        router.replace(currentPath, { scroll: false });
       }
     }
   }, [searchParams, router]);
-  
+
   useEffect(() => {
     // Load custom system prompt from localStorage on mount
     if (typeof window !== 'undefined') {
@@ -76,6 +81,19 @@ export default function ChatPage() {
       // Select a random welcome message only on the client side after mount
       const randomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
       setCurrentWelcomeMessage(WELCOME_MESSAGES[randomIndex]);
+
+      const intervalId = setInterval(() => {
+        setCurrentWelcomeMessage(prevMessage => {
+          let nextMessage;
+          do {
+            const newRandomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
+            nextMessage = WELCOME_MESSAGES[newRandomIndex];
+          } while (nextMessage === prevMessage && WELCOME_MESSAGES.length > 1); // Ensure it's a new message if possible
+          return nextMessage;
+        });
+      }, WELCOME_MESSAGE_INTERVAL);
+
+      return () => clearInterval(intervalId); // Cleanup interval on unmount or when showWelcome changes
     }
   }, [showWelcome]);
 
@@ -103,10 +121,10 @@ export default function ChatPage() {
     };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
-    
+
     let activeSystemPrompt = DEFAULT_SYSTEM_PROMPT;
     if (typeof window !== 'undefined') {
-        activeSystemPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY) || DEFAULT_SYSTEM_PROMPT;
+      activeSystemPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY) || DEFAULT_SYSTEM_PROMPT;
     }
     setCurrentSystemPrompt(activeSystemPrompt);
 
@@ -119,19 +137,19 @@ export default function ChatPage() {
 
     const botMessageId = crypto.randomUUID();
     const initialBotMessageTimestamp = new Date();
-    
+
     const initialBotMessage: Message = {
-      id: botMessageId, 
+      id: botMessageId,
       role: 'assistant',
-      content: '', 
+      content: '',
       timestamp: initialBotMessageTimestamp,
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
 
     let accumulatedResponse = "";
-    
+
     try {
-      const useStreaming = true; 
+      const useStreaming = true; // Always stream
 
       const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -143,7 +161,7 @@ export default function ChatPage() {
           model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250, 
+          max_tokens: 250,
           stream: useStreaming,
         }),
       });
@@ -153,15 +171,15 @@ export default function ChatPage() {
         try {
           const errorData = await response.json();
           const messageFromServer = errorData.error?.message ||
-                                    errorData.detail || 
-                                    errorData.error ||
-                                    errorData.message;
+            errorData.detail ||
+            errorData.error ||
+            errorData.message;
 
           if (typeof messageFromServer === 'string') {
             apiErrorMessage = messageFromServer;
           } else if (messageFromServer && typeof messageFromServer === 'object') {
             apiErrorMessage = JSON.stringify(messageFromServer);
-          } else if (typeof errorData === 'string') { 
+          } else if (typeof errorData === 'string') {
             apiErrorMessage = errorData;
           }
         } catch (e) {
@@ -174,72 +192,60 @@ export default function ChatPage() {
         }
         throw new Error(apiErrorMessage);
       }
-      
-      if (useStreaming) {
-        if (!response.body) {
-          throw new Error("Response body is null for streaming");
+
+      if (!response.body) {
+        throw new Error("Response body is null for streaming");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamLoop = true;
+
+      while (streamLoop) {
+        const { done, value } = await reader.read();
+        if (done) {
+          streamLoop = false;
+          break;
         }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let streamLoop = true;
 
-        while (streamLoop) {
-          const { done, value } = await reader.read();
-          if (done) {
-            streamLoop = false;
-            break;
-          }
+        const chunk = decoder.decode(value, { stream: true });
+        const eventLines = chunk.split('\n\n');
 
-          const chunk = decoder.decode(value, { stream: true });
-          const eventLines = chunk.split('\n\n');
-
-          for (const eventLine of eventLines) {
-            if (eventLine.trim() === '') continue;
-            if (eventLine.startsWith('data: ')) {
-              const jsonDataString = eventLine.substring(5).trim();
-              if (jsonDataString === '[DONE]') {
-                streamLoop = false;
-                break;
-              }
-              if (jsonDataString) {
-                try {
-                  const parsed = JSON.parse(jsonDataString);
-                  const choice = parsed.choices?.[0];
-                  if (choice) {
-                    const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
-                    if (deltaContent) {
-                      accumulatedResponse += deltaContent;
-                      setMessages((prevMessages) =>
-                        prevMessages.map((msg) =>
-                          msg.id === botMessageId
-                            ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } 
-                            : msg
-                        )
-                      );
-                    }
-                    if (choice.finish_reason) {
-                      streamLoop = false;
-                      break;
-                    }
+        for (const eventLine of eventLines) {
+          if (eventLine.trim() === '') continue;
+          if (eventLine.startsWith('data: ')) {
+            const jsonDataString = eventLine.substring(5).trim();
+            if (jsonDataString === '[DONE]') {
+              streamLoop = false;
+              break;
+            }
+            if (jsonDataString) {
+              try {
+                const parsed = JSON.parse(jsonDataString);
+                const choice = parsed.choices?.[0];
+                if (choice) {
+                  const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
+                  if (deltaContent) {
+                    accumulatedResponse += deltaContent;
+                    setMessages((prevMessages) =>
+                      prevMessages.map((msg) =>
+                        msg.id === botMessageId
+                          ? { ...msg, content: accumulatedResponse } // Keep original timestamp
+                          : msg
+                      )
+                    );
                   }
-                } catch (e) {
-                  console.error('Error parsing stream data:', e, jsonDataString);
+                  if (choice.finish_reason) {
+                    streamLoop = false;
+                    break;
+                  }
                 }
+              } catch (e) {
+                console.error('Error parsing stream data:', e, jsonDataString);
               }
             }
           }
-          if (!streamLoop) break; 
+          if (!streamLoop) break;
         }
-      } else { 
-        const responseData = await response.json();
-        accumulatedResponse = responseData.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === botMessageId
-              ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp }
-              : msg
-          )
-        );
       }
 
     } catch (error) {
@@ -253,14 +259,14 @@ export default function ChatPage() {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: initialBotMessageTimestamp }
+            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}` }
             : msg
         )
       );
     } finally {
       setIsLoading(false);
       if (isSuggestionClick && textareaRef.current) {
-         textareaRef.current.focus();
+        textareaRef.current.focus();
       }
     }
   };
@@ -269,8 +275,8 @@ export default function ChatPage() {
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
       <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px] border-b border-border/50">
         <div className="flex items-center gap-2">
-          <span 
-             className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+          <span
+            className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
           >
             PyscoutAI
           </span>
@@ -280,9 +286,9 @@ export default function ChatPage() {
           />
         </div>
         <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="text-sm hover:bg-primary/10 hover:border-primary transition-colors duration-200"
             onClick={() => router.push('/pricing')}
           >
@@ -297,11 +303,12 @@ export default function ChatPage() {
 
       <div className="flex-1 flex flex-col min-h-0 relative">
         {showWelcome && messages.length === 0 && !isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in-0 duration-700 ease-out">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0">
             <div className="text-center mb-10">
               <Bot className="h-16 w-16 text-primary mb-6 mx-auto" />
               <h2
-                className="text-4xl sm:text-5xl font-medium bg-gradient-to-br from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
+                key={currentWelcomeMessage} // Add key here for re-triggering animation
+                className="text-4xl sm:text-5xl font-medium bg-gradient-to-br from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent text-center animate-in fade-in-0 duration-700 ease-out"
               >
                 {currentWelcomeMessage}
               </h2>
