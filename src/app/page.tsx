@@ -2,21 +2,17 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Message, Model } from '@/types/chat'; // Added Model type
+import type { Message, Model } from '@/types/chat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot, Video, Brain, GalleryVerticalEnd, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE_CONTENT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
-
-const SUGGESTION_CARDS = [
-  // Suggestions removed as per previous request
-];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,8 +40,10 @@ export default function ChatPage() {
       setIsLoading(false);
       setShowWelcome(true);
       // Clean up URL
-      const currentPath = window.location.pathname;
-      router.replace(currentPath, { scroll: false });
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        router.replace(currentPath, { scroll: false });
+      }
     }
   }, [searchParams, router]);
 
@@ -77,20 +75,23 @@ export default function ChatPage() {
       { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
       ...messages.map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: newUserMessage.content }
-    ].filter(msg => msg.content.trim() !== ''); // Ensure no empty messages are sent
+    ].filter(msg => msg.content.trim() !== '');
 
     const botMessageId = crypto.randomUUID();
+    const initialBotMessageTimestamp = new Date(); // Set timestamp once
     const initialBotMessage: Message = {
       id: botMessageId,
       role: 'assistant',
-      content: '',
-      timestamp: new Date(),
+      content: '', // Start with empty content for streaming
+      timestamp: initialBotMessageTimestamp,
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
 
     let accumulatedResponse = "";
 
     try {
+      const useStreaming = true; // Always stream
+
       const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -102,36 +103,39 @@ export default function ChatPage() {
           messages: messagesForApi,
           temperature: 0.7,
           max_tokens: 250,
-          stream: true, // Always use streaming
+          stream: useStreaming,
         }),
       });
 
       if (!response.ok) {
         let apiErrorMessage = `HTTP error! status: ${response.status}`;
         try {
-          const errorData = await response.json();
-          if (typeof errorData === 'string') {
-            apiErrorMessage = errorData;
-          } else if (errorData) {
-            const messageFromServer = errorData.error?.message ||
+          const errorData = await response.json(); // Try to parse error JSON
+          const messageFromServer = errorData.error?.message ||
+                                    errorData.detail || // Common for some FastAPI errors
                                     errorData.error ||
-                                    errorData.message ||
-                                    errorData.detail;
-            if (typeof messageFromServer === 'string') {
-              apiErrorMessage = messageFromServer;
-            } else if (messageFromServer && typeof messageFromServer === 'object') {
-              apiErrorMessage = JSON.stringify(messageFromServer);
-            } else if (messageFromServer) {
-               apiErrorMessage = String(messageFromServer);
-            }
+                                    errorData.message;
+
+          if (typeof messageFromServer === 'string') {
+            apiErrorMessage = messageFromServer;
+          } else if (messageFromServer && typeof messageFromServer === 'object') {
+            apiErrorMessage = JSON.stringify(messageFromServer);
+          } else if (typeof errorData === 'string') { // Fallback if errorData itself is a string
+            apiErrorMessage = errorData;
           }
         } catch (e) {
-          // Failed to parse JSON, stick with the HTTP status error
+          // Failed to parse JSON, stick with the HTTP status error or try to read as text
+          try {
+            const errorText = await response.text();
+            if (errorText) apiErrorMessage = errorText;
+          } catch (textErr) {
+            // Stick with original HTTP error
+          }
         }
         throw new Error(apiErrorMessage);
       }
 
-      // Always use streaming logic
+      // Always use streaming logic as per last request
       if (!response.body) {
         throw new Error("Response body is null for streaming");
       }
@@ -163,12 +167,12 @@ export default function ChatPage() {
                 const choice = parsed.choices?.[0];
                 if (choice) {
                   const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
-                  if (deltaContent) { // Ensure deltaContent is not empty before appending
+                  if (deltaContent) {
                     accumulatedResponse += deltaContent;
                     setMessages((prevMessages) =>
                       prevMessages.map((msg) =>
                         msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse, timestamp: new Date() }
+                          ? { ...msg, content: accumulatedResponse } // Only update content
                           : msg
                       )
                     );
@@ -186,6 +190,7 @@ export default function ChatPage() {
           }
         }
       }
+
     } catch (error) {
       console.error('Failed to send message or process response:', error);
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
@@ -197,7 +202,7 @@ export default function ChatPage() {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: new Date() }
+            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: new Date() } // Keep timestamp update here for final error state
             : msg
         )
       );
@@ -210,7 +215,6 @@ export default function ChatPage() {
   };
 
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
 
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
@@ -244,7 +248,6 @@ export default function ChatPage() {
                 Hello, I'm PyscoutAI
               </h2>
             </div>
-            {/* Suggestion cards removed */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
@@ -253,9 +256,3 @@ export default function ChatPage() {
     </SidebarInset>
   );
 }
-
-// Helper function for suggestion card click (if ever re-added)
-// function handleSuggestionClick(suggestion: string, sendMessageFn: (content: string, isSuggestionClick: boolean) => void) {
-//   sendMessageFn(suggestion, true);
-// }
-
