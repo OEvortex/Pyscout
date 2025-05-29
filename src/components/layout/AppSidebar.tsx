@@ -12,11 +12,9 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { ThemeToggle } from '@/components/chat/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { Menu, SquarePen, Bot } from 'lucide-react';
+import { Menu, SquarePen, Bot, Settings } from 'lucide-react'; // Added Settings
 import { useRouter } from 'next/navigation';
-import { ModelSelector } from '../chat/ModelSelector'; // Removed - now in page.tsx
 import { cn } from '@/lib/utils';
 
 export function AppSidebar() {
@@ -24,6 +22,10 @@ export function AppSidebar() {
 
   const handleNewChat = () => {
     router.push(`/?newChat=true&ts=${Date.now()}`);
+  };
+
+  const navigateToSettings = () => {
+    router.push('/settings');
   };
 
   return (
@@ -63,7 +65,18 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 mt-auto">
-        <ThemeToggle />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={navigateToSettings}
+              tooltip={{children: "Settings", side: "right", align: "center"}}
+              className="group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            >
+              <Settings className="h-5 w-5" />
+              <span className="group-data-[collapsible=icon]:hidden">Settings</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

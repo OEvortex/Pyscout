@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Message, Model } from '@/types/chat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const SYSTEM_MESSAGE_CONTENT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const API_BASE_URL = 'https://ws.typegpt.net/v1';
 
 export default function ChatPage() {
@@ -21,11 +22,14 @@ export default function ChatPage() {
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(false);
   const [currentModel, setCurrentModel] = useState<Model | null>(null);
+  const [currentSystemPrompt, setCurrentSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // Determine initial welcome screen visibility
     const timer = setTimeout(() => {
       if (messages.length === 0 && !isLoading) {
         setShowWelcome(true);
@@ -35,18 +39,27 @@ export default function ChatPage() {
   }, [messages.length, isLoading]);
 
   useEffect(() => {
+    // Handle "newChat" parameter
     const newChatParam = searchParams.get('newChat');
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true);
-      // Clean up URL
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
         router.replace(currentPath, { scroll: false });
       }
     }
   }, [searchParams, router]);
+  
+  useEffect(() => {
+    // Load custom system prompt from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const storedPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY);
+      setCurrentSystemPrompt(storedPrompt || DEFAULT_SYSTEM_PROMPT);
+    }
+  }, []);
+
 
   const handleModelChange = useCallback((model: Model | null) => {
     setCurrentModel(model);
@@ -71,9 +84,17 @@ export default function ChatPage() {
     };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setIsLoading(true);
+    
+    // Refresh system prompt from localStorage before sending
+    let activeSystemPrompt = DEFAULT_SYSTEM_PROMPT;
+    if (typeof window !== 'undefined') {
+        activeSystemPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY) || DEFAULT_SYSTEM_PROMPT;
+    }
+    setCurrentSystemPrompt(activeSystemPrompt);
+
 
     const messagesForApi = [
-      { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
+      { role: 'system', content: activeSystemPrompt },
       ...messages.filter(m => m.id !== 'initial-bot-message-for-stream').map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: newUserMessage.content }
     ].filter(msg => msg.content.trim() !== '');
@@ -92,8 +113,7 @@ export default function ChatPage() {
     let accumulatedResponse = "";
     
     try {
-      // Always use streaming for all models as per last request
-      const useStreaming = true; 
+      const useStreaming = true; // Always use streaming as per previous updates
 
       const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -105,13 +125,13 @@ export default function ChatPage() {
           model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250,
+          max_tokens: 250, // Consider making this configurable or increasing
           stream: useStreaming,
         }),
       });
 
       if (!response.ok) {
-        let apiErrorMessage = `HTTP error! status: ${response.status}`;
+        let apiErrorMessage = `API Error: ${response.status}`;
         try {
           const errorData = await response.json();
           const messageFromServer = errorData.error?.message ||
@@ -174,7 +194,7 @@ export default function ChatPage() {
                       setMessages((prevMessages) =>
                         prevMessages.map((msg) =>
                           msg.id === botMessageId
-                            ? { ...msg, content: accumulatedResponse } // Keep original timestamp
+                            ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } 
                             : msg
                         )
                       );
@@ -186,12 +206,14 @@ export default function ChatPage() {
                   }
                 } catch (e) {
                   console.error('Error parsing stream data:', e, jsonDataString);
+                  // Potentially add a non-fatal error message to the chat for this chunk
                 }
               }
             }
           }
+          if (!streamLoop) break; // Break outer loop if inner loop broke
         }
-      } else { // Non-streaming response (should not be hit due to always true stream)
+      } else { // Fallback for non-streaming (should not be hit if useStreaming is always true)
         const responseData = await response.json();
         accumulatedResponse = responseData.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
         setMessages((prevMessages) =>
@@ -226,14 +248,12 @@ export default function ChatPage() {
     }
   };
 
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
       <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px] border-b border-border/50">
         <div className="flex items-center gap-2">
           <span 
-            className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+             className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
           >
             PyscoutAI
           </span>
@@ -272,4 +292,3 @@ export default function ChatPage() {
     </SidebarInset>
   );
 }
-
