@@ -25,7 +25,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
-  const textBeforeSpeechRef = useRef<string>(''); // To store text before speech starts
+  const textBeforeSpeechRef = useRef<string>(''); 
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
 
   const autoResizeTextarea = useCallback((element: HTMLTextAreaElement | null) => {
@@ -70,8 +70,6 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
     recognition.onend = () => {
       setIsListening(false);
-      // After speech ends, the inputValue is set.
-      // textBeforeSpeechRef.current will be updated if the user speaks again.
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -109,15 +107,11 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       if (currentSegmentIsFinal) {
         setInputValue(currentVal => {
           const newValWithSpace = currentVal.trimEnd() + ' ';
-          // Update textBeforeSpeechRef so subsequent speech inputs append correctly
-          // if the user were to click mic again immediately.
           textBeforeSpeechRef.current = newValWithSpace; 
           return newValWithSpace;
         });
       }
 
-      // Auto-resize is handled by useEffect on inputValue change.
-      // Focus and cursor move:
       if (textareaRefToUse.current) {
         setTimeout(() => { 
           if (textareaRefToUse.current) {
@@ -144,7 +138,6 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(event.target.value);
-    // If user types, this becomes the new base for subsequent speech input
     textBeforeSpeechRef.current = event.target.value; 
   };
   
@@ -157,7 +150,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     if (inputValue.trim() && !isLoading) {
       onSendMessage(inputValue.trim());
       setInputValue('');
-      textBeforeSpeechRef.current = ''; // Reset after sending
+      textBeforeSpeechRef.current = ''; 
       if (textareaRefToUse.current) {
         textareaRefToUse.current.style.height = 'auto'; 
       }
@@ -186,7 +179,6 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     if (isListening) {
       speechRecognitionRef.current.stop();
     } else {
-      // Store the current input value before starting speech recognition
       textBeforeSpeechRef.current = inputValue; 
       try {
         speechRecognitionRef.current.start();
@@ -283,7 +275,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       )}
     >
       <div className={cn(
-        "bg-card text-card-foreground p-3.5 rounded-full border border-input shadow-lg flex flex-col gap-3", 
+        "bg-card text-card-foreground p-3.5 rounded-2xl border border-input shadow-lg flex flex-col gap-3", // Changed from rounded-full to rounded-2xl
         "transition-all duration-300 ease-in-out group-focus-within:shadow-primary/20 group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
       )}>
         <div className="flex items-end space-x-2"> 
