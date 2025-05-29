@@ -15,19 +15,19 @@ body {
     --card-foreground: 220 10% 25%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 10% 25%;
-    --primary: 200 80% 55%; /* Brighter Blue for light mode */
+    --primary: 210 90% 55%; /* Saturated Blue for light mode */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 210 30% 94%; /* Light gray for secondary elements */
     --secondary-foreground: 220 10% 30%;
     --muted: 210 30% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 30 90% 55%; /* Orange for accents in light mode */
+    --accent: 25 95% 58%; /* Vibrant Orange for accents in light mode */
     --accent-foreground: 0 0% 100%; 
     --destructive: 0 75% 55%; 
     --destructive-foreground: 0 0% 100%;
     --border: 210 20% 88%; 
     --input: 210 20% 88%; 
-    --ring: 200 80% 55%; 
+    --ring: 210 90% 55%; 
     --chart-1: 210 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -38,50 +38,50 @@ body {
     /* Sidebar specific vars for light mode */
     --sidebar-background: 210 35% 96%;
     --sidebar-foreground: 220 10% 28%;
-    --sidebar-primary: 200 78% 50%;
+    --sidebar-primary: 210 88% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 30% 90%;
     --sidebar-accent-foreground: 220 10% 20%;
     --sidebar-border: 210 20% 82%;
-    --sidebar-ring: 200 80% 55%;
+    --sidebar-ring: 210 90% 55%;
   }
 
   .dark {
-    --background: 220 10% 8%; /* Gemini: Very dark gray, almost black */
-    --foreground: 210 20% 90%; /* Gemini: Light gray text */
-    --card: 220 10% 12%; /* Gemini: Slightly lighter dark gray for cards, input bar */
-    --card-foreground: 210 20% 85%;
-    --popover: 220 8% 10%; 
-    --popover-foreground: 210 20% 85%;
-    --primary: 200 80% 60%; /* Muted cyan/blue for accents */
+    --background: 224 15% 6%; /* Even darker, slightly bluer black for Gemini feel */
+    --foreground: 210 25% 92%; /* Lighter gray text for better contrast */
+    --card: 224 12% 12%; /* Slightly lighter dark gray for cards, input bar */
+    --card-foreground: 210 20% 88%;
+    --popover: 224 10% 10%; 
+    --popover-foreground: 210 20% 88%;
+    --primary: 205 90% 60%; /* Vibrant Cyan/Blue for accents - Gemini like */
     --primary-foreground: 220 10% 10%; 
-    --secondary: 220 10% 15%; /* Darker gray */
-    --secondary-foreground: 220 15% 88%;
-    --muted: 220 10% 18%; /* Background for code blocks, suggestion card subtitles */
-    --muted-foreground: 220 10% 65%; /* Text for suggestion card subtitles, less prominent text */
-    --accent: 24 90% 60%; /* Orange for accents in dark mode, e.g. user avatar */
+    --secondary: 224 10% 18%; /* Darker gray for less emphasis */
+    --secondary-foreground: 220 15% 80%;
+    --muted: 224 10% 16%; /* Background for code blocks, etc. */
+    --muted-foreground: 220 10% 60%; /* Muted text */
+    --accent: 25 95% 60%; /* Vibrant Orange for accents in dark mode */
     --accent-foreground: 220 10% 10%; 
-    --destructive: 0 65% 55%;
+    --destructive: 0 70% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 20%; /* Gemini: Subtle border for cards if needed */
-    --input: 220 10% 18%; 
-    --ring: 200 80% 60%;
-    --chart-1: 200 70% 60%;
+    --border: 224 10% 22%; /* Subtle border for cards if needed */
+    --input: 224 10% 18%; 
+    --ring: 205 90% 60%; /* Ring color matches primary */
+    --chart-1: 205 70% 60%;
     --chart-2: 160 60% 50%;
-    --chart-3: 30 80% 60%;
+    --chart-3: 25 80% 60%;
     --chart-4: 280 65% 65%;
     --chart-5: 340 75% 60%;
-    --radius: 0.75rem;
+    --radius: 0.875rem; /* Slightly more rounded for a softer, modern feel */
 
     /* Sidebar specific vars for dark mode - Gemini like */
-    --sidebar-background: 220 10% 8%; 
+    --sidebar-background: 224 15% 8%; /* Consistent dark theme */
     --sidebar-foreground: 220 15% 90%;
-    --sidebar-primary: 200 75% 58%;
+    --sidebar-primary: 205 85% 58%;
     --sidebar-primary-foreground: 220 10% 8%;
-    --sidebar-accent: 220 10% 12%;
+    --sidebar-accent: 224 12% 14%;
     --sidebar-accent-foreground: 220 15% 92%;
-    --sidebar-border: 220 10% 13%;
-    --sidebar-ring: 200 80% 60%;
+    --sidebar-border: 224 10% 15%;
+    --sidebar-ring: 205 90% 60%;
   }
 }
 
@@ -92,11 +92,11 @@ body {
   body {
     @apply bg-background text-foreground;
     /* Smooth transitions for theme changes */
-    @apply transition-colors duration-300;
+    @apply transition-colors duration-300 ease-in-out;
   }
 
   .dark body {
-    background-image: linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(220 10% 6%) 100%);
+    background-image: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(224 15% 4%) 100%);
   }
 }
 

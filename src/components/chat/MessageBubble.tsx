@@ -26,20 +26,20 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
       <div className={cn('flex items-start space-x-3 py-3 animate-pulse', !isUser ? 'justify-start' : 'justify-end pl-10 pr-2 sm:pl-12')}>
         {!isUser && (
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarFallback className="bg-primary text-primary-foreground"> {/* Use primary for bot avatar bg */}
+            <AvatarFallback className="bg-primary text-primary-foreground">
               <Bot className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
         )}
         <div className={cn('max-w-[75%] sm:max-w-[70%]')}>
-          <div className="bg-muted rounded-xl p-3.5 space-y-2.5"> {/* Slightly more padding and spacing */}
+          <div className="bg-muted rounded-xl p-3.5 space-y-2.5">
             <div className="h-4 bg-muted-foreground/30 rounded w-3/4"></div>
             <div className="h-4 bg-muted-foreground/30 rounded w-1/2"></div>
           </div>
         </div>
          {isUser && (
           <Avatar className="h-8 w-8 self-start shrink-0">
-             <AvatarFallback className="bg-accent text-accent-foreground"> {/* User accent color for avatar */}
+             <AvatarFallback className="bg-accent text-accent-foreground">
                 <User className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
@@ -61,17 +61,17 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
     >
       {!isUser && (
         <Avatar className="h-8 w-8 self-start shrink-0">
-          <AvatarFallback className="bg-primary text-primary-foreground"> {/* Use primary for bot avatar bg */}
+          <AvatarFallback className="bg-primary text-primary-foreground">
             <Bot className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
       )}
       <div
         className={cn(
-          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3.5 text-sm shadow-md', // Increased padding
+          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3.5 text-sm shadow-md', 
           isUser 
-            ? 'bg-gradient-to-br from-primary to-blue-400 dark:to-purple-600 text-primary-foreground' // User gradient
-            : 'bg-card text-card-foreground' // Bot uses card background
+            ? 'bg-gradient-to-br from-blue-500 via-primary to-purple-600 text-primary-foreground' 
+            : 'bg-card text-card-foreground' 
         )}
       >
         <div className="break-words prose prose-sm dark:prose-invert max-w-none prose-p:mb-2 prose-p:last:mb-0 prose-ul:my-2 prose-ul:ml-1 prose-ul:list-inside prose-ol:my-2 prose-ol:ml-1 prose-ol:list-inside prose-code:bg-muted/80 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-sm prose-code:text-xs prose-pre:bg-muted prose-pre:p-3 prose-pre:rounded-md prose-pre:text-xs prose-pre:overflow-x-auto">
@@ -84,13 +84,13 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
               code: ({node, inline, className, children, ...props}) => {
                 const match = /language-(\w+)/.exec(className || '')
                 return !inline && match ? (
-                  <pre className="bg-muted p-2 rounded-md my-2 overflow-x-auto text-xs">
+                  <pre className="bg-muted/70 dark:bg-muted/50 p-3 my-2 rounded-md text-xs overflow-x-auto">
                     <code className={className} {...props}>
                       {String(children).replace(/\n$/, '')}
                     </code>
                   </pre>
                 ) : (
-                  <code className="bg-muted/80 px-1 py-0.5 rounded-sm text-xs" {...props}>
+                  <code className="bg-muted/80 dark:bg-muted/60 px-1 py-0.5 rounded-sm text-xs" {...props}>
                     {children}
                   </code>
                 )
@@ -103,7 +103,7 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
         {hasMounted && message.timestamp && (
            <p className={cn(
              "text-xs mt-1.5",
-             isUser ? "text-primary-foreground/80 text-right" : "text-muted-foreground text-left"
+             isUser ? "text-primary-foreground/70 text-right" : "text-muted-foreground/80 text-left"
             )}>
              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
            </p>
@@ -111,7 +111,7 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
       </div>
       {isUser && (
          <Avatar className="h-8 w-8 self-start shrink-0">
-          <AvatarFallback className="bg-accent text-accent-foreground"> {/* User accent color for avatar */}
+          <AvatarFallback className="bg-accent text-accent-foreground">
             <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
@@ -119,4 +119,3 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
     </div>
   );
 });
-

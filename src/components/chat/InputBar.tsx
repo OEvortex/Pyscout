@@ -85,7 +85,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     >
       <div className={cn(
         "bg-card text-card-foreground p-3 rounded-xl border border-input shadow-xl flex flex-col gap-2.5", 
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50"
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
       )}>
         <div className="flex items-end space-x-2">
           <Textarea
@@ -106,7 +106,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                   type="button" 
                   variant="ghost"
                   size="icon" 
-                  className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-foreground disabled:bg-muted disabled:text-muted-foreground self-end flex items-center justify-center shrink-0 transition-colors duration-150"
+                  className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 disabled:bg-muted disabled:text-muted-foreground self-end flex items-center justify-center shrink-0 transition-colors duration-200"
                   aria-label="Voice input (placeholder)"
                   disabled={isLoading}
                   onClick={() => showComingSoonToast("Voice input")}
@@ -128,7 +128,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg disabled:opacity-50 transition-colors duration-150"
+                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors duration-200"
                     disabled={isLoading}
                     aria-label="Attach"
                      onClick={() => showComingSoonToast("Attach file")}
@@ -151,7 +151,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg px-2.5 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-150"
+                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg px-2.5 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-200"
                     disabled={isLoading}
                     aria-label={item.label}
                     onClick={item.action}
@@ -171,4 +171,3 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     </form>
   );
 }
-

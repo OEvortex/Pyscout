@@ -28,7 +28,7 @@ function parseModelName(id: string): string {
   const parts = id.split('/');
   let name = parts.length > 1 ? parts.slice(1).join('/') : id;
   name = name.replace(/-/g, ' ').split(' ').map(part => {
-    if (part.toLowerCase() === 'gpt' || part.match(/[a-zA-Z]\d/)) {
+    if (part.toLowerCase() === 'gpt' || part.match(/[a-zA-Z]\d/)) { // Keep GPT and similar (e.g., Llama3) as uppercase
       return part.toUpperCase();
     }
     if (part.length > 0) {
@@ -41,12 +41,12 @@ function parseModelName(id: string): string {
 
 interface ModelSelectorProps {
   selectedModelFromParent: Model | null;
-  onModelChange: (model: Model) => void;
+  onModelChange: (model: Model | null) => void;
 }
 
 export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelSelectorProps) {
   const [models, setModels] = useState<Model[]>([]);
-  const [internalSelectedModelId, setInternalSelectedModelId] = useState<string | null>(null);
+  const [internalSelectedModel, setInternalSelectedModel] = useState<Model | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
 
   useEffect(() => {
     if (clientHasHydrated) {
-      setInternalSelectedModelId(selectedModelFromParent?.id || null);
+      setInternalSelectedModel(selectedModelFromParent);
     }
   }, [selectedModelFromParent, clientHasHydrated]);
 
@@ -76,22 +76,20 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       setModels(parsedModels);
 
       if (parsedModels.length > 0 && !selectedModelFromParent) {
-        const defaultModel = parsedModels.find(m => m.id === "AI4Chat/default");
-        const preferredModel = defaultModel ||
+        const defaultModel = parsedModels.find(m => m.id === "AI4Chat/default") ||
                                parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                parsedModels[0];
-        if (preferredModel) {
-            setTimeout(() => onModelChange(preferredModel), 0);
+        if (defaultModel) {
+            setTimeout(() => onModelChange(defaultModel), 0);
         }
       } else if (parsedModels.length > 0 && selectedModelFromParent && !parsedModels.find(m => m.id === selectedModelFromParent.id)) {
-        const defaultModel = parsedModels.find(m => m.id === "AI4Chat/default");
-        const preferredModel = defaultModel ||
+         const defaultModel = parsedModels.find(m => m.id === "AI4Chat/default") ||
                                parsedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                parsedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                parsedModels[0];
-        if (preferredModel) {
-            setTimeout(() => onModelChange(preferredModel), 0);
+        if (defaultModel) {
+            setTimeout(() => onModelChange(defaultModel), 0);
         }
       }
 
@@ -125,13 +123,12 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
               const parsedCachedModels = cachedData.models.map(m => ({ ...m, name: m.name || parseModelName(m.id) }));
               setModels(parsedCachedModels);
               if (!selectedModelFromParent && parsedCachedModels.length > 0) {
-                const defaultModel = parsedCachedModels.find(m => m.id === "AI4Chat/default");
-                const preferredModel = defaultModel ||
+                const defaultModel = parsedCachedModels.find(m => m.id === "AI4Chat/default") ||
                                        parsedCachedModels.find(m => m.id.toLowerCase().includes('gpt-4o')) ||
                                        parsedCachedModels.find(m => m.id.toLowerCase().includes('flash')) ||
                                        parsedCachedModels[0];
-                if (preferredModel) {
-                  setTimeout(() => onModelChange(preferredModel), 0);
+                if (defaultModel) {
+                  setTimeout(() => onModelChange(defaultModel), 0);
                 }
               }
               setTimeout(() => setIsLoading(false), 0);
@@ -149,7 +146,9 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       }
     };
 
-    loadModels();
+    if (clientHasHydrated) {
+      loadModels();
+    }
   }, [clientHasHydrated, selectedModelFromParent, onModelChange, fetchAndCacheModels]);
 
 
@@ -169,22 +168,20 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         disabled={true}
         aria-label="Loading models"
       >
-        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-        <span className="text-sm">Loading...</span>
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
       </Button>
     );
   }
-
-  const selectedModelForDisplay = models.find(m => m.id === internalSelectedModelId);
   
   let triggerContent: React.ReactNode;
   let triggerDisabled = false;
 
-  if (isLoading && !selectedModelForDisplay && !error) {
+  if (isLoading && !internalSelectedModel && !error) {
     triggerContent = (
       <>
-        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-        <span className="text-sm">Loading...</span>
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
       </>
     );
     triggerDisabled = true;
@@ -197,14 +194,14 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     );
     triggerDisabled = true;
   } else if (models.length === 0 && !isLoading) {
-    triggerContent = <span className="text-sm">No Models</span>;
+    triggerContent = <span className="text-sm text-muted-foreground">No Models</span>;
     triggerDisabled = true;
   } else {
     triggerContent = (
       <>
-        <span className="text-sm font-medium">{selectedModelForDisplay?.name || 'Select Model'}</span>
+        <span className="text-sm font-medium">{internalSelectedModel?.name || 'Select Model'}</span>
         <span className="text-sm text-muted-foreground ml-1">(preview)</span>
-        <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200 ease-in-out", isOpen && "rotate-180")} />
       </>
     );
      triggerDisabled = isLoading && models.length === 0; 
@@ -216,9 +213,9 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center px-1.5 py-1 h-auto rounded-md hover:bg-accent/20 data-[state=open]:bg-accent/30 focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex items-center px-2 py-1 h-auto rounded-md hover:bg-accent/10 data-[state=open]:bg-accent/20 focus-visible:ring-1 focus-visible:ring-ring transition-colors duration-150"
           disabled={triggerDisabled}
-          aria-label={`Selected model: ${selectedModelForDisplay?.name || 'Select Model'}`}
+          aria-label={`Selected model: ${internalSelectedModel?.name || 'Select Model'}`}
         >
           {triggerContent}
         </Button>
@@ -227,7 +224,9 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
         className={cn(
             "w-72 sm:w-80 bg-popover text-popover-foreground border-border shadow-xl p-2", 
             "z-50 rounded-lg", 
-            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+            "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
         )}
         align="start"
       >
@@ -245,18 +244,18 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
                     key={model.id}
                     onSelect={() => handleModelSelect(model.id)}
                     className={cn(
-                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground",
-                      internalSelectedModelId === model.id && "bg-accent text-accent-foreground"
+                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground transition-colors duration-150",
+                      internalSelectedModel?.id === model.id && "bg-primary/80 text-primary-foreground"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col">
-                        <span className={cn("font-medium", internalSelectedModelId === model.id && "text-primary")}>{model.name}</span>
-                        <span className="text-xs text-muted-foreground/80 mt-0.5">
+                        <span className={cn("font-medium", internalSelectedModel?.id === model.id && "text-primary-foreground")}>{model.name}</span>
+                        <span className={cn("text-xs mt-0.5", internalSelectedModel?.id === model.id ? "text-primary-foreground/80" : "text-muted-foreground/80")}>
                           Owned by: {model.owned_by}
                         </span>
                       </div>
-                      {internalSelectedModelId === model.id && <Check className="h-4 w-4 ml-2 text-primary shrink-0" />}
+                      {internalSelectedModel?.id === model.id && <Check className="h-4 w-4 ml-2 text-primary-foreground shrink-0" />}
                     </div>
                   </DropdownMenuItem>
                 ))}
@@ -264,13 +263,13 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
             </ScrollArea>
             <DropdownMenuSeparator className="my-2 bg-border/70" />
             <DropdownMenuItem className="p-0 focus:bg-transparent cursor-default select-none rounded-md">
-                <div className="flex flex-col items-start px-3 py-2.5 w-full rounded-md hover:bg-accent/50 transition-colors group">
+                <div className="flex flex-col items-start px-3 py-2.5 w-full rounded-md hover:bg-accent/10 transition-colors group">
                     <div className="flex items-center w-full mb-1">
-                        <Sparkles className="h-4 w-4 mr-2 text-primary group-hover:text-accent-foreground" />
-                        <p className="font-semibold text-sm text-foreground group-hover:text-accent-foreground">Upgrade to PyscoutAI Pro</p>
+                        <Sparkles className="h-4 w-4 mr-2 text-primary group-hover:text-primary/80" />
+                        <p className="font-semibold text-sm text-foreground group-hover:text-foreground/90">Upgrade to PyscoutAI Pro</p>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2.5 group-hover:text-accent-foreground/80">Get our most capable models and features</p>
-                    <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground group-hover:bg-accent-foreground group-hover:text-accent">
+                    <p className="text-xs text-muted-foreground mb-2.5 group-hover:text-muted-foreground/90">Get our most capable models and features</p>
+                    <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground group-hover:bg-primary/80 transition-colors duration-150">
                         Upgrade
                     </Button>
                 </div>
@@ -281,7 +280,3 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     </DropdownMenu>
   );
 }
-
-    
-
-    

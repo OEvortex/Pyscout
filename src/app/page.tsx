@@ -73,7 +73,7 @@ export default function ChatPage() {
 
     const messagesForApi = [
       { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
-      ...messages.filter(m => m.id !== 'initial-bot-message-for-stream').map(m => ({ role: m.role, content: m.content })), // Exclude temp message
+      ...messages.filter(m => m.id !== 'initial-bot-message-for-stream').map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: newUserMessage.content }
     ].filter(msg => msg.content.trim() !== '');
 
@@ -91,7 +91,7 @@ export default function ChatPage() {
     let accumulatedResponse = "";
     
     try {
-      const useStreaming = true; 
+      const useStreaming = currentModel.owned_by !== "BLACKBOXAI";
 
       const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
         method: 'POST',
@@ -135,59 +135,70 @@ export default function ChatPage() {
         throw new Error(apiErrorMessage);
       }
       
-      if (!response.body) {
-        throw new Error("Response body is null for streaming");
-      }
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let streamLoop = true;
-
-      while (streamLoop) {
-        const { done, value } = await reader.read();
-        if (done) {
-          streamLoop = false;
-          break;
+      if (useStreaming) {
+        if (!response.body) {
+          throw new Error("Response body is null for streaming");
         }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let streamLoop = true;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const eventLines = chunk.split('\n\n');
+        while (streamLoop) {
+          const { done, value } = await reader.read();
+          if (done) {
+            streamLoop = false;
+            break;
+          }
 
-        for (const eventLine of eventLines) {
-          if (eventLine.trim() === '') continue;
-          if (eventLine.startsWith('data: ')) {
-            const jsonDataString = eventLine.substring(5).trim();
-            if (jsonDataString === '[DONE]') {
-              streamLoop = false;
-              break;
-            }
-            if (jsonDataString) {
-              try {
-                const parsed = JSON.parse(jsonDataString);
-                const choice = parsed.choices?.[0];
-                if (choice) {
-                  const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
-                  if (deltaContent) {
-                    accumulatedResponse += deltaContent;
-                    setMessages((prevMessages) =>
-                      prevMessages.map((msg) =>
-                        msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse } 
-                          : msg
-                      )
-                    );
+          const chunk = decoder.decode(value, { stream: true });
+          const eventLines = chunk.split('\n\n');
+
+          for (const eventLine of eventLines) {
+            if (eventLine.trim() === '') continue;
+            if (eventLine.startsWith('data: ')) {
+              const jsonDataString = eventLine.substring(5).trim();
+              if (jsonDataString === '[DONE]') {
+                streamLoop = false;
+                break;
+              }
+              if (jsonDataString) {
+                try {
+                  const parsed = JSON.parse(jsonDataString);
+                  const choice = parsed.choices?.[0];
+                  if (choice) {
+                    const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
+                    if (deltaContent) {
+                      accumulatedResponse += deltaContent;
+                      setMessages((prevMessages) =>
+                        prevMessages.map((msg) =>
+                          msg.id === botMessageId
+                            ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } 
+                            : msg
+                        )
+                      );
+                    }
+                    if (choice.finish_reason) {
+                      streamLoop = false;
+                      break;
+                    }
                   }
-                  if (choice.finish_reason) {
-                    streamLoop = false;
-                    break;
-                  }
+                } catch (e) {
+                  console.error('Error parsing stream data:', e, jsonDataString);
                 }
-              } catch (e) {
-                console.error('Error parsing stream data:', e, jsonDataString);
-                // Potentially handle partial JSON if that's a recurring issue.
               }
             }
           }
         }
+      } else { // Non-streaming response
+        const responseData = await response.json();
+        accumulatedResponse = responseData.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === botMessageId
+              ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp }
+              : msg
+          )
+        );
       }
 
     } catch (error) {
@@ -201,7 +212,7 @@ export default function ChatPage() {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}` }
+            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: initialBotMessageTimestamp }
             : msg
         )
       );
@@ -217,10 +228,10 @@ export default function ChatPage() {
 
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
-      <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px]">
+      <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px] border-b border-border/50">
         <div className="flex items-center gap-2">
           <span 
-            className="text-lg font-semibold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent"
+            className="text-xl font-semibold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
           >
             PyscoutAI
           </span>
@@ -230,11 +241,11 @@ export default function ChatPage() {
           />
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="text-sm">
-            <Sparkles className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="text-sm hover:bg-primary/10 hover:border-primary transition-colors duration-200">
+            <Sparkles className="mr-2 h-4 w-4 text-primary" />
             Upgrade
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon" className="rounded-full hover:bg-accent/20 transition-colors duration-200">
             <CircleUserRound className="h-5 w-5" />
           </Button>
         </div>
@@ -242,11 +253,11 @@ export default function ChatPage() {
 
       <div className="flex-1 flex flex-col min-h-0 relative">
         {showWelcome && messages.length === 0 && !isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in duration-500 ease-out">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in-0 duration-700 ease-out">
             <div className="text-center mb-10">
-              <Bot className="h-16 w-16 text-muted-foreground mb-6 mx-auto" />
+              <Bot className="h-16 w-16 text-primary mb-6 mx-auto" />
               <h2
-                className="text-4xl sm:text-5xl font-medium bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
+                className="text-4xl sm:text-5xl font-medium bg-gradient-to-br from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent text-center"
               >
                 Hello, I'm PyscoutAI
               </h2>
