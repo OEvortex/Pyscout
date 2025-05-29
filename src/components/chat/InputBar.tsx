@@ -11,9 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 
 
 interface InputBarProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, isSuggestionClick?: boolean) => void;
   isLoading: boolean;
-  textareaRef?: React.RefObject<HTMLTextAreaElement>; // Make textareaRef optional or ensure it's always passed
+  textareaRef?: React.RefObject<HTMLTextAreaElement>;
 }
 
 const MAX_TEXTAREA_HEIGHT = 180; 
@@ -21,7 +21,7 @@ const MAX_TEXTAREA_HEIGHT = 180;
 export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextareaRef }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const textareaRef = externalTextareaRef || internalTextareaRef; // Use external if provided, else internal
+  const textareaRef = externalTextareaRef || internalTextareaRef;
   const { toast } = useToast();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -43,11 +43,10 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
   };
 
   useEffect(() => {
-    // Auto-resize on initial load if there's pre-filled text (not typical for chat but good practice)
     if (textareaRef.current) {
       autoResizeTextarea(textareaRef.current);
     }
-  }, []); // Empty dependency array: run once on mount
+  }, []);
 
 
   const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -56,10 +55,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       onSendMessage(inputValue.trim());
       setInputValue('');
       if (textareaRef.current) {
-        // Reset height after sending
         textareaRef.current.style.height = 'auto'; 
         textareaRef.current.style.overflowY = 'hidden';
-        // Ensure it resizes to minimum if it became scrollable then emptied
         autoResizeTextarea(textareaRef.current); 
       }
     }
@@ -83,12 +80,12 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     <form 
       onSubmit={handleSubmit} 
       className={cn(
-        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group", // Added group class here
+        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group",
       )}
     >
       <div className={cn(
         "bg-card text-card-foreground p-3 rounded-xl border border-input shadow-xl flex flex-col gap-2.5", 
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50" // Animation classes
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/50"
       )}>
         <div className="flex items-end space-x-2">
           <Textarea
@@ -109,7 +106,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                   type="button" 
                   variant="ghost"
                   size="icon" 
-                  className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-foreground disabled:bg-muted disabled:text-muted-foreground self-end flex items-center justify-center shrink-0"
+                  className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-foreground disabled:bg-muted disabled:text-muted-foreground self-end flex items-center justify-center shrink-0 transition-colors duration-150"
                   aria-label="Voice input (placeholder)"
                   disabled={isLoading}
                   onClick={() => showComingSoonToast("Voice input")}
@@ -174,4 +171,3 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     </form>
   );
 }
-

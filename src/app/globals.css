@@ -94,6 +94,10 @@ body {
     /* Smooth transitions for theme changes */
     @apply transition-colors duration-300;
   }
+
+  .dark body {
+    background-image: linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(220 10% 6%) 100%);
+  }
 }
 
 /* For Textarea auto-resize */

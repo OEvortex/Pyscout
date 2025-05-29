@@ -21,7 +21,6 @@ export function AppSidebar() {
   const router = useRouter();
 
   const handleNewChat = () => {
-    // Add a timestamp to ensure the query parameter changes, triggering useEffect
     router.push(`/?newChat=true&ts=${Date.now()}`);
   };
 
@@ -46,7 +45,7 @@ export function AppSidebar() {
             <SidebarMenuButton
               onClick={handleNewChat}
               tooltip={{children: "New Chat", side: "right", align: "center"}}
-              className="group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9"
+              className="group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 transition-colors duration-150"
             >
               <SquarePen />
               <span className="group-data-[collapsible=icon]:hidden">New Chat</span>

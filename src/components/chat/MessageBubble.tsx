@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react'; // Import React, useState, useEffect
+import React, { useState, useEffect } from 'react'; 
 import type { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -31,7 +31,7 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
           </Avatar>
         )}
         <div className={cn('max-w-[75%] sm:max-w-[70%]')}>
-          <div className="bg-muted rounded-xl p-3 space-y-2"> {/* Ensure rounded-xl for shimmer too */}
+          <div className="bg-muted rounded-xl p-3 space-y-2">
             <div className="h-4 bg-muted-foreground/30 rounded w-3/4"></div>
             <div className="h-4 bg-muted-foreground/30 rounded w-1/2"></div>
           </div>
@@ -47,16 +47,14 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
     );
   }
   
-  // Adjusted early return: Hide empty assistant bubbles if not shimmering (loading)
   if (!message.content && message.role === 'assistant' && !isShimmer) return null; 
-  // Hide other empty non-assistant messages
   if (!message.content && message.role !== 'assistant') return null;
 
 
   return (
     <div
       className={cn(
-        'flex items-end space-x-3 py-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-300', 
+        'flex items-end space-x-3 py-2 animate-in fade-in-0 slide-in-from-bottom-4 duration-300 ease-out', 
         isUser ? 'justify-end pl-10 pr-2 sm:pl-12' : 'justify-start pr-10 pl-2 sm:pr-12' 
       )}
     >
@@ -69,17 +67,17 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
       )}
       <div
         className={cn(
-          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3 text-sm', 
+          'max-w-[75%] sm:max-w-[70%] rounded-xl p-3 text-sm shadow-md', 
           isUser 
-            ? 'bg-primary text-primary-foreground' 
+            ? 'bg-gradient-to-br from-primary to-blue-400 dark:to-purple-600 text-primary-foreground' 
             : 'bg-card text-card-foreground border border-border/50' 
         )}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
-        {hasMounted && message.timestamp && ( // Only render timestamp if hasMounted is true
+        {hasMounted && message.timestamp && (
            <p className={cn(
              "text-xs mt-1.5",
-             isUser ? "text-primary-foreground/70 text-right" : "text-muted-foreground text-left"
+             isUser ? "text-primary-foreground/80 text-right" : "text-muted-foreground text-left"
             )}>
              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
            </p>

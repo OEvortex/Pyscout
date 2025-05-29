@@ -9,7 +9,7 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Brain, GalleryVerticalEnd, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE_CONTENT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
@@ -73,22 +73,23 @@ export default function ChatPage() {
 
     const messagesForApi = [
       { role: 'system', content: SYSTEM_MESSAGE_CONTENT },
-      ...messages.map(m => ({ role: m.role, content: m.content })),
+      ...messages.filter(m => m.id !== 'initial-bot-message-for-stream').map(m => ({ role: m.role, content: m.content })), // Exclude temp message
       { role: 'user', content: newUserMessage.content }
     ].filter(msg => msg.content.trim() !== '');
 
     const botMessageId = crypto.randomUUID();
     const initialBotMessageTimestamp = new Date();
+    
     const initialBotMessage: Message = {
-      id: botMessageId,
+      id: botMessageId, 
       role: 'assistant',
       content: '', 
-      timestamp: initialBotMessageTimestamp,
+      timestamp: initialBotMessageTimestamp, 
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
 
     let accumulatedResponse = "";
-
+    
     try {
       const useStreaming = true; 
 
@@ -182,6 +183,7 @@ export default function ChatPage() {
                 }
               } catch (e) {
                 console.error('Error parsing stream data:', e, jsonDataString);
+                // Potentially handle partial JSON if that's a recurring issue.
               }
             }
           }
@@ -215,9 +217,13 @@ export default function ChatPage() {
 
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
-      <header className="flex items-center justify-between px-4 py-3 bg-background z-10 h-[60px]">
+      <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px]">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold text-foreground">PyscoutAI</span>
+          <span 
+            className="text-lg font-semibold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent"
+          >
+            PyscoutAI
+          </span>
           <ModelSelector
             selectedModelFromParent={currentModel}
             onModelChange={handleModelChange}
@@ -234,7 +240,7 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col min-h-0 relative"> {/* Key change: flex-grow to flex-1 and added min-h-0 */}
+      <div className="flex-1 flex flex-col min-h-0 relative">
         {showWelcome && messages.length === 0 && !isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in duration-500 ease-out">
             <div className="text-center mb-10">
