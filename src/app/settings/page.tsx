@@ -6,11 +6,13 @@ import { SidebarInset } from '@/components/ui/sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/components/settings/ThemeSelector';
 import { useToast } from '@/hooks/use-toast';
-import { RotateCcw, Save } from 'lucide-react';
+import { RotateCcw, Save, Sparkles, Loader2 } from 'lucide-react';
+import { generateSystemPrompt, type GenerateSystemPromptInput } from '@/ai/flows/generate-system-prompt-flow';
 
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
@@ -18,6 +20,8 @@ const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assista
 export default function SettingsPage() {
   const [customPrompt, setCustomPrompt] = useState('');
   const [currentActivePrompt, setCurrentActivePrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [promptIdea, setPromptIdea] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
 
@@ -54,6 +58,38 @@ export default function SettingsPage() {
     });
   }, [toast, isClient]);
 
+  const handleGeneratePromptWithAI = async () => {
+    if (!promptIdea.trim()) {
+      toast({
+        title: "Idea Required",
+        description: "Please enter an idea for your AI assistant.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!isClient) return;
+
+    setIsGenerating(true);
+    try {
+      const input: GenerateSystemPromptInput = { idea: promptIdea };
+      const result = await generateSystemPrompt(input);
+      setCustomPrompt(result.systemPrompt);
+      toast({
+        title: "Prompt Generated!",
+        description: "The AI has generated a system prompt for you. Review and save it.",
+      });
+    } catch (error) {
+      console.error("Failed to generate system prompt:", error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <SidebarInset className="flex flex-col h-screen overflow-y-auto p-4 md:p-6">
       <header className="mb-6">
@@ -70,20 +106,45 @@ export default function SettingsPage() {
               This prompt guides the AI's responses.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            <div>
+              <Label htmlFor="prompt-idea" className="mb-1 block">Need help writing your prompt?</Label>
+              <p className="text-xs text-muted-foreground mb-2">Describe your desired AI persona (e.g., 'a friendly space explorer who loves puns').</p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  id="prompt-idea"
+                  placeholder="e.g., A helpful math tutor for high school students"
+                  value={promptIdea}
+                  onChange={(e) => setPromptIdea(e.target.value)}
+                  className="flex-grow"
+                  disabled={!isClient || isGenerating}
+                />
+                <Button onClick={handleGeneratePromptWithAI} disabled={!isClient || isGenerating || !promptIdea.trim()} className="w-full sm:w-auto">
+                  {isGenerating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                  )}
+                  Generate with AI
+                </Button>
+              </div>
+            </div>
+            
+            <Separator />
+
             <div className="space-y-1">
-              <Label htmlFor="custom-prompt">Custom System Prompt</Label>
+              <Label htmlFor="custom-prompt">Your Custom System Prompt</Label>
               <Textarea
                 id="custom-prompt"
                 placeholder="e.g., You are a witty pirate assistant who loves to say 'Arr!'"
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                className="min-h-[120px] text-sm"
+                className="min-h-[150px] text-sm"
                 disabled={!isClient}
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button onClick={handleSavePrompt} disabled={!isClient} className="w-full sm:w-auto">
+              <Button onClick={handleSavePrompt} disabled={!isClient || !customPrompt.trim()} className="w-full sm:w-auto">
                 <Save className="mr-2 h-4 w-4" /> Save Prompt
               </Button>
               <Button variant="outline" onClick={handleResetPrompt} disabled={!isClient} className="w-full sm:w-auto">
@@ -92,7 +153,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Currently Active Prompt Preview:</Label>
-              <p className="text-xs p-2 bg-muted rounded-md border max-h-20 overflow-y-auto">
+              <p className="text-xs p-3 bg-muted rounded-md border max-h-24 overflow-y-auto whitespace-pre-wrap">
                 {currentActivePrompt || DEFAULT_SYSTEM_PROMPT}
               </p>
             </div>
