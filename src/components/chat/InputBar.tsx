@@ -93,7 +93,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask PyscoutAI"
+            placeholder="Ask PyscoutAI..."
             className="flex-grow resize-none overflow-y-hidden p-2.5 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px]"
             rows={1}
             disabled={isLoading}
@@ -171,3 +171,4 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     </form>
   );
 }
+

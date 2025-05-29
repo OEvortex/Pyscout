@@ -21,7 +21,7 @@ body {
     --secondary-foreground: 220 10% 30%;
     --muted: 210 30% 94%;
     --muted-foreground: 220 10% 45%;
-    --accent: 200 80% 55%; 
+    --accent: 30 90% 55%; /* Orange for accents in light mode */
     --accent-foreground: 0 0% 100%; 
     --destructive: 0 75% 55%; 
     --destructive-foreground: 0 0% 100%;
@@ -57,9 +57,9 @@ body {
     --primary-foreground: 220 10% 10%; 
     --secondary: 220 10% 15%; /* Darker gray */
     --secondary-foreground: 220 15% 88%;
-    --muted: 220 10% 15%; /* Background for suggestion card subtitles */
-    --muted-foreground: 220 10% 60%; /* Text for suggestion card subtitles */
-    --accent: 200 80% 60%; 
+    --muted: 220 10% 18%; /* Background for code blocks, suggestion card subtitles */
+    --muted-foreground: 220 10% 65%; /* Text for suggestion card subtitles, less prominent text */
+    --accent: 24 90% 60%; /* Orange for accents in dark mode, e.g. user avatar */
     --accent-foreground: 220 10% 10%; 
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
