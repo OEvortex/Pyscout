@@ -114,15 +114,31 @@ textarea::-webkit-scrollbar {
   0% {
     transform: scale(1) rotate(0deg) translateY(0) translateX(0);
     opacity: 1;
+    transform-origin: center center;
+  }
+  25% {
+    transform: scale(0.85) rotate(-120deg) translateY(-40px) translateX(-20px);
+    opacity: 0.8;
+    transform-origin: 40% 60%; /* Shift origin slightly */
+  }
+  50% {
+    transform: scale(0.6) rotate(-360deg) translateY(-90px) translateX(30px);
+    opacity: 0.5;
+    transform-origin: 60% 40%; /* Shift origin again */
+  }
+  75% {
+    transform: scale(0.3) rotate(-720deg) translateY(-160px) translateX(-10px);
+    opacity: 0.2;
+    transform-origin: center center;
   }
   100% {
-    transform: scale(0.05) rotate(720deg) translateY(-150px) translateX(30px); /* Increased rotation, added slight translateX */
+    transform: scale(0.01) rotate(-1080deg) translateY(-250px) translateX(0px);
     opacity: 0;
+    transform-origin: center center;
   }
 }
 
 .animate-vortex-out {
-  animation: vortex-out-animation 1s ease-in-out forwards; /* Slower duration, e.g., 1s */
-  transform-origin: center center; /* Spin around center */
+  animation: vortex-out-animation 1.2s ease-in-out forwards; /* Slower duration, e.g., 1.2s */
   will-change: transform, opacity;
 }

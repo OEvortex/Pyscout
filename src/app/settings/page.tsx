@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
-const ANIMATION_DURATION = 1000; // ms - Adjusted to match new animation duration
+const ANIMATION_DURATION = 1200; // ms - Adjusted to match new animation duration
 
 export default function SettingsPage() {
   const [customPrompt, setCustomPrompt] = useState('');
