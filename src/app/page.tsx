@@ -9,7 +9,7 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Video, Brain, GalleryVerticalEnd, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
+import { Sparkles, CircleUserRound, Bot, Brain, GalleryVerticalEnd, Image as ImageIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE_CONTENT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
@@ -78,11 +78,11 @@ export default function ChatPage() {
     ].filter(msg => msg.content.trim() !== '');
 
     const botMessageId = crypto.randomUUID();
-    const initialBotMessageTimestamp = new Date(); // Set timestamp once
+    const initialBotMessageTimestamp = new Date();
     const initialBotMessage: Message = {
       id: botMessageId,
       role: 'assistant',
-      content: '', // Start with empty content for streaming
+      content: '', 
       timestamp: initialBotMessageTimestamp,
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
@@ -90,7 +90,7 @@ export default function ChatPage() {
     let accumulatedResponse = "";
 
     try {
-      const useStreaming = true; // Always stream
+      const useStreaming = true; 
 
       const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
         method: 'POST',
@@ -110,9 +110,9 @@ export default function ChatPage() {
       if (!response.ok) {
         let apiErrorMessage = `HTTP error! status: ${response.status}`;
         try {
-          const errorData = await response.json(); // Try to parse error JSON
+          const errorData = await response.json();
           const messageFromServer = errorData.error?.message ||
-                                    errorData.detail || // Common for some FastAPI errors
+                                    errorData.detail || 
                                     errorData.error ||
                                     errorData.message;
 
@@ -120,11 +120,10 @@ export default function ChatPage() {
             apiErrorMessage = messageFromServer;
           } else if (messageFromServer && typeof messageFromServer === 'object') {
             apiErrorMessage = JSON.stringify(messageFromServer);
-          } else if (typeof errorData === 'string') { // Fallback if errorData itself is a string
+          } else if (typeof errorData === 'string') { 
             apiErrorMessage = errorData;
           }
         } catch (e) {
-          // Failed to parse JSON, stick with the HTTP status error or try to read as text
           try {
             const errorText = await response.text();
             if (errorText) apiErrorMessage = errorText;
@@ -134,8 +133,7 @@ export default function ChatPage() {
         }
         throw new Error(apiErrorMessage);
       }
-
-      // Always use streaming logic as per last request
+      
       if (!response.body) {
         throw new Error("Response body is null for streaming");
       }
@@ -172,7 +170,7 @@ export default function ChatPage() {
                     setMessages((prevMessages) =>
                       prevMessages.map((msg) =>
                         msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse } // Only update content
+                          ? { ...msg, content: accumulatedResponse } 
                           : msg
                       )
                     );
@@ -184,7 +182,6 @@ export default function ChatPage() {
                 }
               } catch (e) {
                 console.error('Error parsing stream data:', e, jsonDataString);
-                // Potentially update UI with a stream parsing error
               }
             }
           }
@@ -202,7 +199,7 @@ export default function ChatPage() {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: new Date() } // Keep timestamp update here for final error state
+            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}` }
             : msg
         )
       );
@@ -218,7 +215,7 @@ export default function ChatPage() {
 
   return (
     <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
-      <header className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-10 h-[60px]">
+      <header className="flex items-center justify-between px-4 py-3 bg-background z-10 h-[60px]">
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold text-foreground">PyscoutAI</span>
           <ModelSelector
@@ -237,7 +234,7 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <div className="flex-grow flex flex-col relative">
+      <div className="flex-1 flex flex-col min-h-0 relative"> {/* Key change: flex-grow to flex-1 and added min-h-0 */}
         {showWelcome && messages.length === 0 && !isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-0 animate-in fade-in duration-500 ease-out">
             <div className="text-center mb-10">
