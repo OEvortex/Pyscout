@@ -84,8 +84,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       )}
     >
       <div className={cn(
-        "bg-card text-card-foreground p-3 rounded-xl border border-input shadow-xl flex flex-col gap-2.5", 
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-2xl group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
+        "bg-card text-card-foreground p-3.5 rounded-xl border border-input shadow-lg flex flex-col gap-3", 
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-xl group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
       )}>
         <div className="flex items-end space-x-2">
           <Textarea
@@ -128,7 +128,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors duration-200"
+                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-lg disabled:opacity-50 transition-colors duration-200"
                     disabled={isLoading}
                     aria-label="Attach"
                      onClick={() => showComingSoonToast("Attach file")}
@@ -151,7 +151,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg px-2.5 py-1 h-auto text-xs disabled:opacity-50 transition-colors duration-200"
+                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg px-2.5 py-1.5 h-auto text-sm disabled:opacity-50 transition-colors duration-200"
                     disabled={isLoading}
                     aria-label={item.label}
                     onClick={item.action}
