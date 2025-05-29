@@ -15,7 +15,7 @@ body {
     --card-foreground: 220 10% 25%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 10% 25%;
-    --primary: 210 90% 55%; /* Saturated Blue for light mode */
+    --primary: 205 90% 60%; /* Saturated Blue for light mode */
     --primary-foreground: 0 0% 100%; /* White */
     --secondary: 210 30% 94%; /* Light gray for secondary elements */
     --secondary-foreground: 220 10% 30%;
@@ -27,23 +27,23 @@ body {
     --destructive-foreground: 0 0% 100%;
     --border: 210 20% 88%;
     --input: 210 20% 88%;
-    --ring: 210 90% 55%;
+    --ring: 205 90% 60%;
     --chart-1: 210 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --radius: 0.875rem; /* Slightly more rounded for a softer, modern feel - (was 0.75rem) */
+    --radius: 0.875rem; /* Slightly more rounded for a softer, modern feel */
 
     /* Sidebar specific vars for light mode */
     --sidebar-background: 210 35% 96%; /* Very light grayish blue */
     --sidebar-foreground: 220 10% 28%; /* Dark gray */
-    --sidebar-primary: 210 90% 55%; /* Saturated Blue - Align with main theme primary */
+    --sidebar-primary: 205 90% 60%; /* Saturated Blue - Align with main theme primary */
     --sidebar-primary-foreground: 0 0% 100%; /* White - Align with main theme primary foreground */
     --sidebar-accent: 210 30% 90%; /* Lighter gray for hover cards */
     --sidebar-accent-foreground: 220 10% 25%; /* Darker gray text for contrast on hover */
     --sidebar-border: 210 20% 85%; /* Slightly adjusted border */
-    --sidebar-ring: 210 90% 55%; /* Align with main theme ring */
+    --sidebar-ring: 205 90% 60%; /* Align with main theme ring */
   }
 
   .dark {
@@ -96,7 +96,7 @@ body {
   }
 
   .dark body {
-    background-image: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(224 15% 4%) 100%);
+    background-image: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(224 15% 3%) 100%);
   }
 }
 
@@ -112,18 +112,17 @@ textarea::-webkit-scrollbar {
 /* Vortex-out animation */
 @keyframes vortex-out-animation {
   0% {
-    transform: scale(1) rotate(0deg) translateY(0);
+    transform: scale(1) rotate(0deg) translateY(0) translateX(0);
     opacity: 1;
   }
   100% {
-    transform: scale(0.1) rotate(360deg) translateY(-200px);
+    transform: scale(0.05) rotate(720deg) translateY(-150px) translateX(30px); /* Increased rotation, added slight translateX */
     opacity: 0;
   }
 }
 
 .animate-vortex-out {
-  animation: vortex-out-animation 0.5s ease-in-out forwards;
-  transform-origin: center 25%; /* Adjust origin to make it feel like it's going up and away */
+  animation: vortex-out-animation 1s ease-in-out forwards; /* Slower duration, e.g., 1s */
+  transform-origin: center center; /* Spin around center */
   will-change: transform, opacity;
 }
-
