@@ -46,19 +46,29 @@ export default function ChatPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [currentModel, setCurrentModel] = useState<Model | null>(null);
   const [currentSystemPrompt, setCurrentSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
-  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState(WELCOME_MESSAGES[0]);
+  
+  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState(WELCOME_MESSAGES[0]); // Default fixed message
+  const [clientMounted, setClientMounted] = useState(false);
+
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    setClientMounted(true);
+  }, []);
+
+  useEffect(() => {
     // Determine initial welcome screen visibility
+    // This logic itself should be safe as it only sets a boolean state
     const timer = setTimeout(() => {
       if (messages.length === 0 && !isLoading) {
         setShowWelcome(true);
+      } else {
+        setShowWelcome(false); // Explicitly set to false if conditions aren't met
       }
-    }, 100);
+    }, 100); // Small delay to allow initial render pass
     return () => clearTimeout(timer);
   }, [messages.length, isLoading]);
 
@@ -68,10 +78,11 @@ export default function ChatPage() {
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
-      setShowWelcome(true);
+      setShowWelcome(true); // This will trigger the welcome message logic
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        router.replace(currentPath, { scroll: false });
+        // Replace URL without triggering a full navigation, just cleans up query params
+        router.replace(currentPath, { scroll: false }); 
       }
     }
   }, [searchParams, router]);
@@ -82,14 +93,17 @@ export default function ChatPage() {
       const storedPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY);
       setCurrentSystemPrompt(storedPrompt || DEFAULT_SYSTEM_PROMPT);
     }
-  }, []);
+  }, []); // Runs once on client mount
 
   useEffect(() => {
-    if (showWelcome) {
-      const randomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
-      setCurrentWelcomeMessage(WELCOME_MESSAGES[randomIndex]);
+    let intervalId: NodeJS.Timeout | undefined = undefined;
 
-      const intervalId = setInterval(() => {
+    if (showWelcome && clientMounted) {
+      // Set an initial random message only after client has mounted and if welcome is shown
+      const initialRandomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
+      setCurrentWelcomeMessage(WELCOME_MESSAGES[initialRandomIndex]);
+
+      intervalId = setInterval(() => {
         setCurrentWelcomeMessage(prevMessage => {
           let nextMessage;
           do {
@@ -99,10 +113,13 @@ export default function ChatPage() {
           return nextMessage;
         });
       }, WELCOME_MESSAGE_INTERVAL);
-
-      return () => clearInterval(intervalId);
     }
-  }, [showWelcome]);
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [showWelcome, clientMounted]); // Depends on showWelcome and clientMounted
 
 
   const handleModelChange = useCallback((model: Model | null) => {
@@ -133,6 +150,8 @@ export default function ChatPage() {
     if (typeof window !== 'undefined') {
       activeSystemPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY) || DEFAULT_SYSTEM_PROMPT;
     }
+    // We update currentSystemPrompt state here just for display consistency if needed elsewhere,
+    // but activeSystemPrompt is what's used for the API call.
     setCurrentSystemPrompt(activeSystemPrompt);
 
 
@@ -143,12 +162,12 @@ export default function ChatPage() {
     ].filter(msg => msg.content.trim() !== '');
 
     const botMessageId = crypto.randomUUID();
-    const initialBotMessageTimestamp = new Date();
+    const initialBotMessageTimestamp = new Date(); // Capture timestamp once
 
     const initialBotMessage: Message = {
       id: botMessageId,
       role: 'assistant',
-      content: '',
+      content: '', // Start with empty content for streaming
       timestamp: initialBotMessageTimestamp,
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
@@ -156,7 +175,7 @@ export default function ChatPage() {
     let accumulatedResponse = "";
 
     try {
-      const useStreaming = true; // Always stream
+      const useStreaming = true; // Always stream as per last request
 
       const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -168,7 +187,7 @@ export default function ChatPage() {
           model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250, // Adjusted based on previous API usage
+          max_tokens: 250, 
           stream: useStreaming,
         }),
       });
@@ -178,28 +197,29 @@ export default function ChatPage() {
         try {
           const errorData = await response.json();
           const messageFromServer = errorData.error?.message ||
-            errorData.detail ||
-            errorData.error ||
+            errorData.detail || // FastAPI often uses 'detail'
+            (errorData.error && typeof errorData.error === 'object' ? JSON.stringify(errorData.error) : errorData.error) || // Handle object errors
             errorData.message;
 
           if (typeof messageFromServer === 'string') {
             apiErrorMessage = messageFromServer;
           } else if (messageFromServer && typeof messageFromServer === 'object') {
             apiErrorMessage = JSON.stringify(messageFromServer);
-          } else if (typeof errorData === 'string') {
+          } else if (typeof errorData === 'string') { // Fallback if errorData itself is a string
             apiErrorMessage = errorData;
           }
         } catch (e) {
-          try {
+           try { // Attempt to read as text if JSON parsing fails
             const errorText = await response.text();
-            if (errorText) apiErrorMessage = errorText;
+            if(errorText) apiErrorMessage = errorText;
           } catch (textErr) {
-            // Stick with original HTTP error
+            // Stick with original HTTP error if text parsing also fails
           }
         }
         throw new Error(apiErrorMessage);
       }
-
+      
+      // Streaming logic
       if (!response.body) {
         throw new Error("Response body is null for streaming");
       }
@@ -236,22 +256,23 @@ export default function ChatPage() {
                     setMessages((prevMessages) =>
                       prevMessages.map((msg) =>
                         msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp }
+                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } // Keep original timestamp
                           : msg
                       )
                     );
                   }
-                  if (choice.finish_reason) {
+                  if (choice.finish_reason) { // Check for finish reason from the stream
                     streamLoop = false;
                     break;
                   }
                 }
               } catch (e) {
                 console.error('Error parsing stream data:', e, jsonDataString);
+                // Potentially handle malformed JSON chunk without stopping the whole stream if appropriate
               }
             }
           }
-          if (!streamLoop) break;
+          if (!streamLoop) break; // Exit outer loop if inner loop broke
         }
       }
 
@@ -266,7 +287,7 @@ export default function ChatPage() {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}` }
+            ? { ...msg, content: `Sorry, I couldn't process your request. ${errorMessage}`, timestamp: initialBotMessageTimestamp }
             : msg
         )
       );
@@ -290,9 +311,8 @@ export default function ChatPage() {
         router.push('/help');
         break;
       case 'Sign Out':
-        // Placeholder: In a real app, this would clear auth tokens and redirect
         toast({ title: "Signed Out", description: "You have been signed out (placeholder)." });
-        router.push('/'); // Redirect to home
+        router.push('/'); 
         break;
       default:
         toast({ title: "Profile Action", description: `${action} clicked (placeholder).` });
@@ -360,10 +380,10 @@ export default function ChatPage() {
             <div className="text-center mb-10">
               <Bot className="h-16 w-16 text-primary mb-6 mx-auto" />
               <h2
-                key={currentWelcomeMessage}
+                key={clientMounted && showWelcome ? currentWelcomeMessage : WELCOME_MESSAGES[0]}
                 className="text-4xl sm:text-5xl font-medium bg-gradient-to-br from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent text-center animate-in fade-in-0 duration-700 ease-out"
               >
-                {currentWelcomeMessage}
+                {clientMounted && showWelcome ? currentWelcomeMessage : WELCOME_MESSAGES[0]}
               </h2>
             </div>
           </div>
@@ -374,3 +394,4 @@ export default function ChatPage() {
     </SidebarInset>
   );
 }
+
