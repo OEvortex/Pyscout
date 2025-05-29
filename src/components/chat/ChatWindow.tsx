@@ -34,7 +34,7 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
   }
 
   return (
-    <ScrollArea className="flex-grow w-full max-w-3xl mx-auto" viewportRef={viewportRef} ref={scrollAreaRef}>
+    <ScrollArea className="flex-grow min-h-0 w-full max-w-3xl mx-auto" viewportRef={viewportRef} ref={scrollAreaRef}>
       <div className="p-4 sm:p-6 space-y-4"> {/* Increased spacing */}
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
