@@ -22,19 +22,19 @@ body {
     --muted: 210 30% 94%;
     --muted-foreground: 220 10% 45%;
     --accent: 25 95% 58%; /* Vibrant Orange for accents in light mode */
-    --accent-foreground: 0 0% 100%; 
-    --destructive: 0 75% 55%; 
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 88%; 
-    --input: 210 20% 88%; 
-    --ring: 210 90% 55%; 
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 210 90% 55%;
     --chart-1: 210 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     --radius: 0.875rem; /* Slightly more rounded for a softer, modern feel - (was 0.75rem) */
-    
+
     /* Sidebar specific vars for light mode */
     --sidebar-background: 210 35% 96%; /* Very light grayish blue */
     --sidebar-foreground: 220 10% 28%; /* Dark gray */
@@ -51,20 +51,20 @@ body {
     --foreground: 210 25% 92%; /* Lighter gray text for better contrast */
     --card: 224 12% 12%; /* Slightly lighter dark gray for cards, input bar */
     --card-foreground: 210 20% 88%;
-    --popover: 224 10% 10%; 
+    --popover: 224 10% 10%;
     --popover-foreground: 210 20% 88%;
     --primary: 205 90% 60%; /* Vibrant Cyan/Blue for accents - Gemini like */
-    --primary-foreground: 220 10% 10%; 
+    --primary-foreground: 220 10% 10%;
     --secondary: 224 10% 18%; /* Darker gray for less emphasis */
     --secondary-foreground: 220 15% 80%;
     --muted: 224 10% 16%; /* Background for code blocks, etc. */
     --muted-foreground: 220 10% 60%; /* Muted text */
     --accent: 25 95% 60%; /* Vibrant Orange for accents in dark mode */
-    --accent-foreground: 220 10% 10%; 
+    --accent-foreground: 220 10% 10%;
     --destructive: 0 70% 58%;
     --destructive-foreground: 0 0% 100%;
     --border: 224 10% 22%; /* Subtle border for cards if needed */
-    --input: 224 10% 18%; 
+    --input: 224 10% 18%;
     --ring: 205 90% 60%; /* Ring color matches primary */
     --chart-1: 205 70% 60%;
     --chart-2: 160 60% 50%;
@@ -108,3 +108,22 @@ textarea {
 textarea::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* Vortex-out animation */
+@keyframes vortex-out-animation {
+  0% {
+    transform: scale(1) rotate(0deg) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.1) rotate(360deg) translateY(-200px);
+    opacity: 0;
+  }
+}
+
+.animate-vortex-out {
+  animation: vortex-out-animation 0.5s ease-in-out forwards;
+  transform-origin: center 25%; /* Adjust origin to make it feel like it's going up and away */
+  will-change: transform, opacity;
+}
+

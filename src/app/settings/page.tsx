@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/components/settings/ThemeSelector';
 import { useToast } from '@/hooks/use-toast';
-import { RotateCcw, Save, Sparkles, Loader2, X } from 'lucide-react'; // Added X icon
+import { RotateCcw, Save, Sparkles, Loader2, X } from 'lucide-react';
 import { generateSystemPrompt, type GenerateSystemPromptInput } from '@/ai/flows/generate-system-prompt-flow';
-import { useRouter } from 'next/navigation'; // Added useRouter
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+const ANIMATION_DURATION = 500; // ms
 
 export default function SettingsPage() {
   const [customPrompt, setCustomPrompt] = useState('');
@@ -24,7 +26,8 @@ export default function SettingsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
-  const router = useRouter(); // Initialize router
+  const [isClosing, setIsClosing] = useState(false); // For exit animation
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -55,7 +58,7 @@ export default function SettingsPage() {
     toast({
       title: "System Prompt Reset",
       description: "System prompt has been reset to default.",
-      variant: "default" 
+      variant: "default"
     });
   }, [toast, isClient]);
 
@@ -91,31 +94,42 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCloseSettings = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      router.back();
+    }, ANIMATION_DURATION);
+  };
+
   return (
-    <main className="flex flex-col min-h-screen overflow-y-auto p-4 md:p-6 bg-background relative">
-      <header className="mb-6 flex items-start justify-between">
+    <main className={cn(
+        "flex flex-col min-h-screen overflow-y-auto p-4 md:p-6 bg-background relative",
+        isClosing && 'animate-vortex-out' // Apply animation class
+      )}
+    >
+      <header className="mb-6 flex items-start justify-between sticky top-0 bg-background/80 backdrop-blur-sm py-4 z-10 -mx-4 md:-mx-6 px-4 md:px-6 border-b">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your PyscoutAI preferences.</p>
+          <p className="text-muted-foreground text-sm">Manage your PyscoutAI preferences.</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => router.back()} className="ml-auto">
-          <X className="h-6 w-6" />
+        <Button variant="ghost" size="icon" onClick={handleCloseSettings} className="ml-auto rounded-full hover:bg-accent/20">
+          <X className="h-5 w-5" />
           <span className="sr-only">Close settings</span>
         </Button>
       </header>
 
-      <div className="space-y-8">
-        <Card>
+      <div className="space-y-8 mt-2 animate-in fade-in-50 duration-300">
+        <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
             <CardTitle>System Prompt</CardTitle>
             <CardDescription>
-              Customize the personality and instructions for PyscoutAI. 
+              Customize the personality and instructions for PyscoutAI.
               This prompt guides the AI's responses.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="prompt-idea" className="mb-1 block">Need help writing your prompt?</Label>
+              <Label htmlFor="prompt-idea" className="mb-1 block font-medium">Need help writing your prompt?</Label>
               <p className="text-xs text-muted-foreground mb-2">Describe your desired AI persona (e.g., 'a friendly space explorer who loves puns').</p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Input
@@ -126,7 +140,7 @@ export default function SettingsPage() {
                   className="flex-grow"
                   disabled={!isClient || isGenerating}
                 />
-                <Button onClick={handleGeneratePromptWithAI} disabled={!isClient || isGenerating || !promptIdea.trim()} className="w-full sm:w-auto">
+                <Button onClick={handleGeneratePromptWithAI} disabled={!isClient || isGenerating || !promptIdea.trim()} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
                   {isGenerating ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
@@ -136,17 +150,17 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-            
+
             <Separator />
 
             <div className="space-y-1">
-              <Label htmlFor="custom-prompt">Your Custom System Prompt</Label>
+              <Label htmlFor="custom-prompt" className="font-medium">Your Custom System Prompt</Label>
               <Textarea
                 id="custom-prompt"
                 placeholder="e.g., You are a witty pirate assistant who loves to say 'Arr!'"
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                className="min-h-[150px] text-sm"
+                className="min-h-[150px] text-sm focus:border-primary"
                 disabled={!isClient}
               />
             </div>
@@ -159,7 +173,7 @@ export default function SettingsPage() {
               </Button>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Currently Active Prompt Preview:</Label>
+              <Label className="text-xs text-muted-foreground font-medium">Currently Active Prompt Preview:</Label>
               <p className="text-xs p-3 bg-muted rounded-md border max-h-24 overflow-y-auto whitespace-pre-wrap">
                 {currentActivePrompt || DEFAULT_SYSTEM_PROMPT}
               </p>
@@ -169,7 +183,7 @@ export default function SettingsPage() {
 
         <Separator />
 
-        <Card>
+        <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Appearance</CardTitle>
             <CardDescription>Choose how PyscoutAI looks on your device.</CardDescription>
@@ -179,7 +193,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-      <footer className="mt-auto pt-6 text-center text-xs text-muted-foreground">
+      <footer className="mt-auto pt-8 pb-4 text-center text-xs text-muted-foreground">
         PyscoutAI Settings
       </footer>
     </main>
