@@ -33,17 +33,17 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --radius: 0.75rem; /* Slightly larger radius */
+    --radius: 0.875rem; /* Slightly more rounded for a softer, modern feel - (was 0.75rem) */
     
     /* Sidebar specific vars for light mode */
-    --sidebar-background: 210 35% 96%;
-    --sidebar-foreground: 220 10% 28%;
-    --sidebar-primary: 210 88% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 30% 90%;
-    --sidebar-accent-foreground: 220 10% 20%;
-    --sidebar-border: 210 20% 82%;
-    --sidebar-ring: 210 90% 55%;
+    --sidebar-background: 210 35% 96%; /* Very light grayish blue */
+    --sidebar-foreground: 220 10% 28%; /* Dark gray */
+    --sidebar-primary: 210 90% 55%; /* Saturated Blue - Align with main theme primary */
+    --sidebar-primary-foreground: 0 0% 100%; /* White - Align with main theme primary foreground */
+    --sidebar-accent: 210 30% 90%; /* Lighter gray for hover cards */
+    --sidebar-accent-foreground: 220 10% 25%; /* Darker gray text for contrast on hover */
+    --sidebar-border: 210 20% 85%; /* Slightly adjusted border */
+    --sidebar-ring: 210 90% 55%; /* Align with main theme ring */
   }
 
   .dark {
@@ -74,14 +74,14 @@ body {
     --radius: 0.875rem; /* Slightly more rounded for a softer, modern feel */
 
     /* Sidebar specific vars for dark mode - Gemini like */
-    --sidebar-background: 224 15% 8%; /* Consistent dark theme */
-    --sidebar-foreground: 220 15% 90%;
-    --sidebar-primary: 205 85% 58%;
-    --sidebar-primary-foreground: 220 10% 8%;
-    --sidebar-accent: 224 12% 14%;
-    --sidebar-accent-foreground: 220 15% 92%;
-    --sidebar-border: 224 10% 15%;
-    --sidebar-ring: 205 90% 60%;
+    --sidebar-background: 224 15% 8%; /* Very dark blue-gray */
+    --sidebar-foreground: 220 15% 90%; /* Light gray */
+    --sidebar-primary: 205 90% 60%; /* Vibrant Cyan/Blue - Align with main theme primary */
+    --sidebar-primary-foreground: 220 10% 10%; /* Dark - Align with main theme primary foreground */
+    --sidebar-accent: 224 12% 18%; /* Slightly lighter dark blue-gray for hover cards */
+    --sidebar-accent-foreground: 220 15% 92%; /* Light gray */
+    --sidebar-border: 224 10% 18%; /* Adjusted for better subtlety */
+    --sidebar-ring: 205 90% 60%; /* Align with main theme ring */
   }
 }
 
