@@ -9,12 +9,13 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot, Video, Brain, GalleryVerticalEnd, PlusCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const API_BASE_URL = 'https://ws.typegpt.net/v1';
+
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -263,7 +264,12 @@ export default function ChatPage() {
           />
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="text-sm hover:bg-primary/10 hover:border-primary transition-colors duration-200">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-sm hover:bg-primary/10 hover:border-primary transition-colors duration-200"
+            onClick={() => router.push('/pricing')}
+          >
             <Sparkles className="mr-2 h-4 w-4 text-primary" />
             Upgrade
           </Button>
@@ -284,6 +290,7 @@ export default function ChatPage() {
                 Hello, I'm PyscoutAI
               </h2>
             </div>
+            {/* Suggestion cards removed as per previous request */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
