@@ -7,9 +7,8 @@ import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
-// Removed SidebarInset import
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Image as ImageIcon, Brain, GalleryVerticalEnd, HelpCircle, LogOut, UserCog, History, Settings } from 'lucide-react'; // Added Settings icon
+import { Sparkles, CircleUserRound, Bot, Image as ImageIcon, Brain, GalleryVerticalEnd, HelpCircle, LogOut, UserCog, History, Settings } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DropdownMenu,
@@ -20,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+const DEFAULT_SYSTEM_PROMPT = `You are PyscoutAI, an advanced and versatile AI assistant designed to be exceptionally helpful, knowledgeable, and engaging. Your primary goal is to assist users by providing comprehensive and accurate information, generating creative text formats, answering questions thoughtfully, and performing tasks efficiently. Maintain a friendly, approachable, and slightly enthusiastic tone. You are capable of understanding complex queries, breaking down problems, and explaining concepts clearly. Feel free to use your broad knowledge base, but always prioritize helpfulness and clarity in your responses. If you're unsure about something, it's better to say so than to provide incorrect information. Strive to make every interaction a positive and productive one for the user.`;
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const API_BASE_URL = 'https://ws.typegpt.net/v1';
 
@@ -165,7 +164,7 @@ export default function ChatPage() {
     let accumulatedResponse = "";
 
     try {
-      const useStreaming = true;
+      const useStreaming = true; // Always true as per previous request
 
       const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -295,7 +294,7 @@ export default function ChatPage() {
       case 'Activity':
         router.push('/activity');
         break;
-      case 'Settings': // Added Settings navigation
+      case 'Settings':
         router.push('/settings');
         break;
       case 'Help & Feedback':
@@ -311,7 +310,7 @@ export default function ChatPage() {
   };
 
   return (
-    <main className="flex flex-col h-screen overflow-hidden"> {/* Replaced SidebarInset */}
+    <main className="flex flex-col h-screen overflow-hidden">
       <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px] border-b border-border/50">
         <div className="flex items-center gap-2">
           <span

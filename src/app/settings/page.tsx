@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
-const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+const DEFAULT_SYSTEM_PROMPT = `You are PyscoutAI, an advanced and versatile AI assistant designed to be exceptionally helpful, knowledgeable, and engaging. Your primary goal is to assist users by providing comprehensive and accurate information, generating creative text formats, answering questions thoughtfully, and performing tasks efficiently. Maintain a friendly, approachable, and slightly enthusiastic tone. You are capable of understanding complex queries, breaking down problems, and explaining concepts clearly. Feel free to use your broad knowledge base, but always prioritize helpfulness and clarity in your responses. If you're unsure about something, it's better to say so than to provide incorrect information. Strive to make every interaction a positive and productive one for the user.`;
 const ANIMATION_DURATION = 1200; // ms - Adjusted to match new animation duration
 
 export default function SettingsPage() {
@@ -104,8 +104,8 @@ export default function SettingsPage() {
   return (
     <main className="flex flex-col min-h-screen overflow-y-auto">
       <div className={cn(
-          "flex flex-col flex-1 p-4 md:p-6 bg-transparent relative", // bg-background removed, apply to inner container
-          isClosing && 'animate-vortex-out' // Apply animation class
+          "flex flex-col flex-1 p-4 md:p-6 bg-transparent relative", 
+          isClosing && 'animate-vortex-out' 
         )}
       >
         <header className="mb-6 flex items-start justify-between sticky top-0 bg-background/80 dark:bg-background/90 backdrop-blur-sm py-4 z-10 -mx-4 md:-mx-6 px-4 md:px-6 border-b">
