@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { SidebarInset } from '@/components/ui/sidebar';
+// Removed SidebarInset import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Sparkles, Zap, Brain, Cpu, InfinityIcon } from 'lucide-react';
@@ -22,7 +22,7 @@ export default function PricingPage() {
   ];
 
   return (
-    <SidebarInset className="flex flex-col h-screen overflow-y-auto p-4 md:p-8 items-center justify-center">
+    <main className="flex flex-col min-h-screen overflow-y-auto p-4 md:p-8 items-center justify-center bg-background"> {/* Replaced SidebarInset */}
       <header className="mb-8 text-center max-w-2xl">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent py-2">
           PyscoutAI: Unrestricted Access, Completely Free!
@@ -66,6 +66,6 @@ export default function PricingPage() {
       <footer className="mt-12 text-center text-xs text-muted-foreground">
         PyscoutAI - The Future of AI, Open to Everyone.
       </footer>
-    </SidebarInset>
+    </main>
   );
 }

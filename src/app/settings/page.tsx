@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { SidebarInset } from '@/components/ui/sidebar';
+// Removed SidebarInset import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -91,7 +91,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <SidebarInset className="flex flex-col h-screen overflow-y-auto p-4 md:p-6">
+    <main className="flex flex-col min-h-screen overflow-y-auto p-4 md:p-6 bg-background"> {/* Replaced SidebarInset */}
       <header className="mb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your PyscoutAI preferences.</p>
@@ -175,6 +175,6 @@ export default function SettingsPage() {
       <footer className="mt-auto pt-6 text-center text-xs text-muted-foreground">
         PyscoutAI Settings
       </footer>
-    </SidebarInset>
+    </main>
   );
 }

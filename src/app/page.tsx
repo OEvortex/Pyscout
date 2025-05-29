@@ -7,9 +7,9 @@ import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
-import { SidebarInset } from '@/components/ui/sidebar';
+// Removed SidebarInset import
 import { Button } from '@/components/ui/button';
-import { Sparkles, CircleUserRound, Bot, Image as ImageIcon, Brain, GalleryVerticalEnd, HelpCircle, LogOut, UserCog, History } from 'lucide-react';
+import { Sparkles, CircleUserRound, Bot, Image as ImageIcon, Brain, GalleryVerticalEnd, HelpCircle, LogOut, UserCog, History, Settings } from 'lucide-react'; // Added Settings icon
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DropdownMenu,
@@ -47,9 +47,8 @@ export default function ChatPage() {
   const [currentModel, setCurrentModel] = useState<Model | null>(null);
   const [currentSystemPrompt, setCurrentSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   
-  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState(WELCOME_MESSAGES[0]); // Default fixed message
+  const [currentWelcomeMessage, setCurrentWelcomeMessage] = useState(WELCOME_MESSAGES[0]);
   const [clientMounted, setClientMounted] = useState(false);
-
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,46 +59,40 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    // Determine initial welcome screen visibility
-    // This logic itself should be safe as it only sets a boolean state
     const timer = setTimeout(() => {
       if (messages.length === 0 && !isLoading) {
         setShowWelcome(true);
       } else {
-        setShowWelcome(false); // Explicitly set to false if conditions aren't met
+        setShowWelcome(false);
       }
-    }, 100); // Small delay to allow initial render pass
+    }, 100);
     return () => clearTimeout(timer);
   }, [messages.length, isLoading]);
 
   useEffect(() => {
-    // Handle "newChat" parameter
     const newChatParam = searchParams.get('newChat');
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
-      setShowWelcome(true); // This will trigger the welcome message logic
+      setShowWelcome(true);
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        // Replace URL without triggering a full navigation, just cleans up query params
         router.replace(currentPath, { scroll: false }); 
       }
     }
   }, [searchParams, router]);
 
   useEffect(() => {
-    // Load custom system prompt from localStorage on mount
     if (typeof window !== 'undefined') {
       const storedPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY);
       setCurrentSystemPrompt(storedPrompt || DEFAULT_SYSTEM_PROMPT);
     }
-  }, []); // Runs once on client mount
+  }, []);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined = undefined;
 
     if (showWelcome && clientMounted) {
-      // Set an initial random message only after client has mounted and if welcome is shown
       const initialRandomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
       setCurrentWelcomeMessage(WELCOME_MESSAGES[initialRandomIndex]);
 
@@ -119,7 +112,7 @@ export default function ChatPage() {
         clearInterval(intervalId);
       }
     };
-  }, [showWelcome, clientMounted]); // Depends on showWelcome and clientMounted
+  }, [showWelcome, clientMounted]);
 
 
   const handleModelChange = useCallback((model: Model | null) => {
@@ -150,10 +143,7 @@ export default function ChatPage() {
     if (typeof window !== 'undefined') {
       activeSystemPrompt = localStorage.getItem(CUSTOM_SYSTEM_PROMPT_KEY) || DEFAULT_SYSTEM_PROMPT;
     }
-    // We update currentSystemPrompt state here just for display consistency if needed elsewhere,
-    // but activeSystemPrompt is what's used for the API call.
     setCurrentSystemPrompt(activeSystemPrompt);
-
 
     const messagesForApi = [
       { role: 'system', content: activeSystemPrompt },
@@ -162,12 +152,12 @@ export default function ChatPage() {
     ].filter(msg => msg.content.trim() !== '');
 
     const botMessageId = crypto.randomUUID();
-    const initialBotMessageTimestamp = new Date(); // Capture timestamp once
+    const initialBotMessageTimestamp = new Date();
 
     const initialBotMessage: Message = {
       id: botMessageId,
       role: 'assistant',
-      content: '', // Start with empty content for streaming
+      content: '',
       timestamp: initialBotMessageTimestamp,
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
@@ -175,7 +165,7 @@ export default function ChatPage() {
     let accumulatedResponse = "";
 
     try {
-      const useStreaming = true; // Always stream as per last request
+      const useStreaming = true;
 
       const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
@@ -197,19 +187,19 @@ export default function ChatPage() {
         try {
           const errorData = await response.json();
           const messageFromServer = errorData.error?.message ||
-            errorData.detail || // FastAPI often uses 'detail'
-            (errorData.error && typeof errorData.error === 'object' ? JSON.stringify(errorData.error) : errorData.error) || // Handle object errors
+            errorData.detail ||
+            (errorData.error && typeof errorData.error === 'object' ? JSON.stringify(errorData.error) : errorData.error) ||
             errorData.message;
 
           if (typeof messageFromServer === 'string') {
             apiErrorMessage = messageFromServer;
           } else if (messageFromServer && typeof messageFromServer === 'object') {
             apiErrorMessage = JSON.stringify(messageFromServer);
-          } else if (typeof errorData === 'string') { // Fallback if errorData itself is a string
+          } else if (typeof errorData === 'string') {
             apiErrorMessage = errorData;
           }
         } catch (e) {
-           try { // Attempt to read as text if JSON parsing fails
+           try {
             const errorText = await response.text();
             if(errorText) apiErrorMessage = errorText;
           } catch (textErr) {
@@ -219,7 +209,6 @@ export default function ChatPage() {
         throw new Error(apiErrorMessage);
       }
       
-      // Streaming logic
       if (!response.body) {
         throw new Error("Response body is null for streaming");
       }
@@ -256,23 +245,22 @@ export default function ChatPage() {
                     setMessages((prevMessages) =>
                       prevMessages.map((msg) =>
                         msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } // Keep original timestamp
+                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp }
                           : msg
                       )
                     );
                   }
-                  if (choice.finish_reason) { // Check for finish reason from the stream
+                  if (choice.finish_reason) {
                     streamLoop = false;
                     break;
                   }
                 }
               } catch (e) {
                 console.error('Error parsing stream data:', e, jsonDataString);
-                // Potentially handle malformed JSON chunk without stopping the whole stream if appropriate
               }
             }
           }
-          if (!streamLoop) break; // Exit outer loop if inner loop broke
+          if (!streamLoop) break;
         }
       }
 
@@ -307,6 +295,9 @@ export default function ChatPage() {
       case 'Activity':
         router.push('/activity');
         break;
+      case 'Settings': // Added Settings navigation
+        router.push('/settings');
+        break;
       case 'Help & Feedback':
         router.push('/help');
         break;
@@ -320,7 +311,7 @@ export default function ChatPage() {
   };
 
   return (
-    <SidebarInset className="flex flex-col h-screen overflow-hidden p-0 md:m-0 md:rounded-none">
+    <main className="flex flex-col h-screen overflow-hidden"> {/* Replaced SidebarInset */}
       <header className="flex items-center justify-between px-4 py-3 bg-transparent z-10 h-[60px] border-b border-border/50">
         <div className="flex items-center gap-2">
           <span
@@ -360,6 +351,10 @@ export default function ChatPage() {
                 <History className="mr-2 h-4 w-4" />
                 <span>Activity</span>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleProfileMenuClick('Settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleProfileMenuClick('Help & Feedback')}>
                 <HelpCircle className="mr-2 h-4 w-4" />
@@ -391,7 +386,6 @@ export default function ChatPage() {
         <ChatWindow messages={messages} isLoading={isLoading} />
       </div>
       <InputBar onSendMessage={handleSendMessage} isLoading={isLoading} textareaRef={textareaRef} />
-    </SidebarInset>
+    </main>
   );
 }
-

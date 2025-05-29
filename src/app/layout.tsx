@@ -4,8 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from "@/components/ui/toaster";
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/AppSidebar'; // New import
+// Removed SidebarProvider and AppSidebar imports
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,11 +35,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider defaultOpen={true}>
-            <AppSidebar />
-            {/* Content will be rendered inside SidebarInset by page.tsx */}
-            {children}
-          </SidebarProvider>
+          {/* Removed SidebarProvider and AppSidebar */}
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

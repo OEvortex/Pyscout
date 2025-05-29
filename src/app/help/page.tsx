@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { SidebarInset } from '@/components/ui/sidebar';
+// Removed SidebarInset import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { HelpCircle } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function HelpPage() {
   const router = useRouter();
 
   return (
-    <SidebarInset className="flex flex-col h-screen overflow-y-auto p-4 md:p-8 items-center justify-center">
+    <main className="flex flex-col min-h-screen overflow-y-auto p-4 md:p-8 items-center justify-center bg-background"> {/* Replaced SidebarInset */}
       <Card className="w-full max-w-md text-center">
         <CardHeader>
           <HelpCircle className="h-16 w-16 text-primary mx-auto mb-4" />
@@ -34,6 +34,6 @@ export default function HelpPage() {
       <footer className="mt-12 text-center text-xs text-muted-foreground">
         PyscoutAI - Support Center
       </footer>
-    </SidebarInset>
+    </main>
   );
 }
