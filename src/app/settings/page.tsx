@@ -2,7 +2,6 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
-// Removed SidebarInset import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,8 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/components/settings/ThemeSelector';
 import { useToast } from '@/hooks/use-toast';
-import { RotateCcw, Save, Sparkles, Loader2 } from 'lucide-react';
+import { RotateCcw, Save, Sparkles, Loader2, X } from 'lucide-react'; // Added X icon
 import { generateSystemPrompt, type GenerateSystemPromptInput } from '@/ai/flows/generate-system-prompt-flow';
+import { useRouter } from 'next/navigation'; // Added useRouter
 
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const DEFAULT_SYSTEM_PROMPT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter(); // Initialize router
 
   useEffect(() => {
     setIsClient(true);
@@ -91,10 +92,16 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="flex flex-col min-h-screen overflow-y-auto p-4 md:p-6 bg-background"> {/* Replaced SidebarInset */}
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your PyscoutAI preferences.</p>
+    <main className="flex flex-col min-h-screen overflow-y-auto p-4 md:p-6 bg-background relative">
+      <header className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground">Manage your PyscoutAI preferences.</p>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => router.back()} className="ml-auto">
+          <X className="h-6 w-6" />
+          <span className="sr-only">Close settings</span>
+        </Button>
       </header>
 
       <div className="space-y-8">
