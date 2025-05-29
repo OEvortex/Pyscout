@@ -86,7 +86,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (showWelcome) {
-      // Select a random welcome message only on the client side after mount
       const randomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
       setCurrentWelcomeMessage(WELCOME_MESSAGES[randomIndex]);
 
@@ -96,12 +95,12 @@ export default function ChatPage() {
           do {
             const newRandomIndex = Math.floor(Math.random() * WELCOME_MESSAGES.length);
             nextMessage = WELCOME_MESSAGES[newRandomIndex];
-          } while (nextMessage === prevMessage && WELCOME_MESSAGES.length > 1); // Ensure it's a new message if possible
+          } while (nextMessage === prevMessage && WELCOME_MESSAGES.length > 1);
           return nextMessage;
         });
       }, WELCOME_MESSAGE_INTERVAL);
 
-      return () => clearInterval(intervalId); // Cleanup interval on unmount or when showWelcome changes
+      return () => clearInterval(intervalId);
     }
   }, [showWelcome]);
 
@@ -169,7 +168,7 @@ export default function ChatPage() {
           model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250,
+          max_tokens: 250, // Adjusted based on previous API usage
           stream: useStreaming,
         }),
       });
@@ -237,7 +236,7 @@ export default function ChatPage() {
                     setMessages((prevMessages) =>
                       prevMessages.map((msg) =>
                         msg.id === botMessageId
-                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } // Keep original timestamp
+                          ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp }
                           : msg
                       )
                     );
@@ -280,8 +279,24 @@ export default function ChatPage() {
   };
 
   const handleProfileMenuClick = (action: string) => {
-    // Placeholder for actual actions
-    toast({ title: "Profile Action", description: `${action} clicked (placeholder).` });
+    switch (action) {
+      case 'Manage Account':
+        router.push('/account');
+        break;
+      case 'Activity':
+        router.push('/activity');
+        break;
+      case 'Help & Feedback':
+        router.push('/help');
+        break;
+      case 'Sign Out':
+        // Placeholder: In a real app, this would clear auth tokens and redirect
+        toast({ title: "Signed Out", description: "You have been signed out (placeholder)." });
+        router.push('/'); // Redirect to home
+        break;
+      default:
+        toast({ title: "Profile Action", description: `${action} clicked (placeholder).` });
+    }
   };
 
   return (
@@ -345,13 +360,12 @@ export default function ChatPage() {
             <div className="text-center mb-10">
               <Bot className="h-16 w-16 text-primary mb-6 mx-auto" />
               <h2
-                key={currentWelcomeMessage} // Add key here for re-triggering animation
+                key={currentWelcomeMessage}
                 className="text-4xl sm:text-5xl font-medium bg-gradient-to-br from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent text-center animate-in fade-in-0 duration-700 ease-out"
               >
                 {currentWelcomeMessage}
               </h2>
             </div>
-            {/* Removed suggestion cards */}
           </div>
         )}
         <ChatWindow messages={messages} isLoading={isLoading} />
