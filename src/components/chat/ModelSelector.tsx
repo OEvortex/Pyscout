@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 
 const MODEL_CACHE_KEY = 'pyscoutai_models_cache';
 const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
+const API_BASE_URL = 'https://ws.typegpt.net/v1';
 
 interface CachedModels {
   models: Model[];
@@ -66,7 +67,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://ai4free-test.hf.space/v1/models');
+      const response = await fetch(`${API_BASE_URL}/models`);
       if (!response.ok) {
         throw new Error(`Failed to fetch models: ${response.statusText}`);
       }
@@ -280,3 +281,4 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     </DropdownMenu>
   );
 }
+

@@ -13,6 +13,7 @@ import { Sparkles, CircleUserRound, Bot } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const SYSTEM_MESSAGE_CONTENT = 'You are PyscoutAI, a helpful and friendly assistant, inspired by Gemini.';
+const API_BASE_URL = 'https://ws.typegpt.net/v1';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -91,9 +92,10 @@ export default function ChatPage() {
     let accumulatedResponse = "";
     
     try {
-      const useStreaming = currentModel.owned_by !== "BLACKBOXAI";
+      // Always use streaming for all models as per last request
+      const useStreaming = true; 
 
-      const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
+      const response = await fetch(`${API_BASE_URL}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +174,7 @@ export default function ChatPage() {
                       setMessages((prevMessages) =>
                         prevMessages.map((msg) =>
                           msg.id === botMessageId
-                            ? { ...msg, content: accumulatedResponse, timestamp: initialBotMessageTimestamp } 
+                            ? { ...msg, content: accumulatedResponse } // Keep original timestamp
                             : msg
                         )
                       );
@@ -189,7 +191,7 @@ export default function ChatPage() {
             }
           }
         }
-      } else { // Non-streaming response
+      } else { // Non-streaming response (should not be hit due to always true stream)
         const responseData = await response.json();
         accumulatedResponse = responseData.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
         setMessages((prevMessages) =>
@@ -270,3 +272,4 @@ export default function ChatPage() {
     </SidebarInset>
   );
 }
+
