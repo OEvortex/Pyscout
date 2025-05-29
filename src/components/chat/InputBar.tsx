@@ -25,6 +25,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
+  const textBeforeSpeechRef = useRef<string>(''); // To store text before speech starts
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
 
   const autoResizeTextarea = useCallback((element: HTMLTextAreaElement | null) => {
@@ -59,8 +60,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     setIsSpeechSupported(true);
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false; // Stop after the first utterance
-    recognition.interimResults = true; // We can use interim results if needed, but final is cleaner for input
+    recognition.continuous = false; 
+    recognition.interimResults = true; 
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
@@ -69,6 +70,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
     recognition.onend = () => {
       setIsListening(false);
+      // After speech ends, the inputValue is set.
+      // textBeforeSpeechRef.current will be updated if the user speaks again.
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -90,24 +93,38 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let finalTranscriptSegment = '';
+      let combinedTranscript = '';
+      let currentSegmentIsFinal = false;
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const transcriptPart = event.results[i][0].transcript;
+        combinedTranscript += transcriptPart;
         if (event.results[i].isFinal) {
-          finalTranscriptSegment += event.results[i][0].transcript;
+          currentSegmentIsFinal = true;
         }
       }
+      
+      setInputValue(textBeforeSpeechRef.current + combinedTranscript);
 
-      if (finalTranscriptSegment) {
-        setInputValue(prevVal => (prevVal.endsWith(' ') || prevVal === '' ? prevVal : prevVal + ' ') + finalTranscriptSegment.trim() + ' ');
-        if (textareaRefToUse.current) {
-          // autoResizeTextarea is called by useEffect on inputValue change
-          setTimeout(() => { // Ensure focus and cursor move happens after state update and DOM re-render
-            if (textareaRefToUse.current) {
-              textareaRefToUse.current.focus();
-              textareaRefToUse.current.selectionStart = textareaRefToUse.current.selectionEnd = textareaRefToUse.current.value.length;
-            }
-          }, 0);
-        }
+      if (currentSegmentIsFinal) {
+        setInputValue(currentVal => {
+          const newValWithSpace = currentVal.trimEnd() + ' ';
+          // Update textBeforeSpeechRef so subsequent speech inputs append correctly
+          // if the user were to click mic again immediately.
+          textBeforeSpeechRef.current = newValWithSpace; 
+          return newValWithSpace;
+        });
+      }
+
+      // Auto-resize is handled by useEffect on inputValue change.
+      // Focus and cursor move:
+      if (textareaRefToUse.current) {
+        setTimeout(() => { 
+          if (textareaRefToUse.current) {
+            textareaRefToUse.current.focus();
+            textareaRefToUse.current.selectionStart = textareaRefToUse.current.selectionEnd = textareaRefToUse.current.value.length;
+          }
+        }, 0);
       }
     };
 
@@ -122,12 +139,13 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
         speechRecognitionRef.current.stop();
       }
     };
-  }, [toast, textareaRefToUse]); // Removed autoResizeTextarea as it's memoized and doesn't change
+  }, [toast, textareaRefToUse]); 
 
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(event.target.value);
-    // autoResizeTextarea is handled by useEffect on inputValue change
+    // If user types, this becomes the new base for subsequent speech input
+    textBeforeSpeechRef.current = event.target.value; 
   };
   
   const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -139,9 +157,9 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     if (inputValue.trim() && !isLoading) {
       onSendMessage(inputValue.trim());
       setInputValue('');
+      textBeforeSpeechRef.current = ''; // Reset after sending
       if (textareaRefToUse.current) {
         textareaRefToUse.current.style.height = 'auto'; 
-        // autoResizeTextarea is handled by useEffect on inputValue change (to empty)
       }
     }
   };
@@ -168,6 +186,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     if (isListening) {
       speechRecognitionRef.current.stop();
     } else {
+      // Store the current input value before starting speech recognition
+      textBeforeSpeechRef.current = inputValue; 
       try {
         speechRecognitionRef.current.start();
       } catch (e) {
@@ -199,7 +219,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 p-0 rounded-full text-primary hover:bg-primary/10"
+                className="h-10 w-10 p-0 rounded-full text-primary hover:bg-primary/10 transition-colors duration-200"
                 onClick={handleMicClick}
                 aria-label="Stop listening"
               >
@@ -220,7 +240,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                 type="submit"
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 p-0 rounded-full text-primary hover:bg-primary/10"
+                className="h-10 w-10 p-0 rounded-full text-primary hover:bg-primary/10 transition-colors duration-200"
                 disabled={isLoading}
                 aria-label="Send message"
               >
@@ -240,7 +260,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
               type="button"
               variant="ghost"
               size="icon"
-              className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+              className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200"
               onClick={handleMicClick}
               disabled={isLoading || !isSpeechSupported}
               aria-label="Voice input"
@@ -263,10 +283,10 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       )}
     >
       <div className={cn(
-        "bg-card text-card-foreground p-3.5 rounded-xl border border-input shadow-lg flex flex-col gap-3", 
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-xl group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
+        "bg-card text-card-foreground p-3.5 rounded-full border border-input shadow-lg flex flex-col gap-3", 
+        "transition-all duration-300 ease-in-out group-focus-within:shadow-primary/20 group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
       )}>
-        <div className="flex items-end space-x-2"> {/* Use items-end for vertical alignment */}
+        <div className="flex items-end space-x-2"> 
           <Textarea
             ref={textareaRefToUse}
             value={inputValue}
@@ -278,7 +298,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
             disabled={isLoading}
             aria-label="Chat message input"
           />
-          <div className="shrink-0 self-end mb-px"> {/* Aligns button with baseline of text */}
+          <div className="shrink-0 self-end mb-px"> 
              <RightSideButton />
           </div>
         </div>
@@ -333,3 +353,4 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     </form>
   );
 }
+
