@@ -23,7 +23,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [showWelcome, setShowWelcome] = useState(false);
-  const [currentModel, setCurrentModel] = useState<Model | null>(null); 
+  const [currentModel, setCurrentModel] = useState<Model | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -45,11 +45,11 @@ export default function ChatPage() {
       setShowWelcome(true);
       // Clean up URL
       const currentPath = window.location.pathname;
-      router.replace(currentPath, { scroll: false }); 
+      router.replace(currentPath, { scroll: false });
     }
   }, [searchParams, router]);
 
-  const handleModelChange = useCallback((model: Model) => { 
+  const handleModelChange = useCallback((model: Model | null) => {
     setCurrentModel(model);
   }, []);
 
@@ -83,13 +83,12 @@ export default function ChatPage() {
     const initialBotMessage: Message = {
       id: botMessageId,
       role: 'assistant',
-      content: '', 
+      content: '',
       timestamp: new Date(),
     };
     setMessages((prevMessages) => [...prevMessages, initialBotMessage]);
-    
+
     let accumulatedResponse = "";
-    const shouldUseStream = currentModel.owned_by !== 'BLACKBOXAI';
 
     try {
       const response = await fetch('https://ai4free-test.hf.space/v1/chat/completions', {
@@ -102,8 +101,8 @@ export default function ChatPage() {
           model: currentModel.id,
           messages: messagesForApi,
           temperature: 0.7,
-          max_tokens: 250, 
-          stream: shouldUseStream,
+          max_tokens: 250,
+          stream: true, // Always use streaming
         }),
       });
 
@@ -114,14 +113,16 @@ export default function ChatPage() {
           if (typeof errorData === 'string') {
             apiErrorMessage = errorData;
           } else if (errorData) {
-            const messageFromServer = errorData.error?.message || 
-                                    errorData.error || 
-                                    errorData.message || 
+            const messageFromServer = errorData.error?.message ||
+                                    errorData.error ||
+                                    errorData.message ||
                                     errorData.detail;
             if (typeof messageFromServer === 'string') {
               apiErrorMessage = messageFromServer;
-            } else if (messageFromServer) { // If it's an object/array (e.g. FastAPI validation detail)
+            } else if (messageFromServer && typeof messageFromServer === 'object') {
               apiErrorMessage = JSON.stringify(messageFromServer);
+            } else if (messageFromServer) {
+               apiErrorMessage = String(messageFromServer);
             }
           }
         } catch (e) {
@@ -130,72 +131,60 @@ export default function ChatPage() {
         throw new Error(apiErrorMessage);
       }
 
-      if (shouldUseStream) {
-        if (!response.body) {
-          throw new Error("Response body is null for streaming");
+      // Always use streaming logic
+      if (!response.body) {
+        throw new Error("Response body is null for streaming");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamLoop = true;
+
+      while (streamLoop) {
+        const { done, value } = await reader.read();
+        if (done) {
+          streamLoop = false;
+          break;
         }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let streamLoop = true;
 
-        while (streamLoop) {
-          const { done, value } = await reader.read();
-          if (done) {
-            streamLoop = false;
-            break;
-          }
+        const chunk = decoder.decode(value, { stream: true });
+        const eventLines = chunk.split('\n\n');
 
-          const chunk = decoder.decode(value, { stream: true });
-          const eventLines = chunk.split('\n\n');
-
-          for (const eventLine of eventLines) {
-            if (eventLine.trim() === '') continue;
-            if (eventLine.startsWith('data: ')) {
-              const jsonDataString = eventLine.substring(5).trim();
-              if (jsonDataString === '[DONE]') {
-                streamLoop = false;
-                break;
-              }
-              if (jsonDataString) {
-                try {
-                  const parsed = JSON.parse(jsonDataString);
-                  const choice = parsed.choices?.[0];
-                  if (choice) {
-                    const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
-                    if (deltaContent) { // Ensure deltaContent is not empty before appending
-                      accumulatedResponse += deltaContent;
-                      setMessages((prevMessages) =>
-                        prevMessages.map((msg) =>
-                          msg.id === botMessageId
-                            ? { ...msg, content: accumulatedResponse, timestamp: new Date() }
-                            : msg
-                        )
-                      );
-                    }
-                    if (choice.finish_reason) {
-                      streamLoop = false;
-                      break;
-                    }
+        for (const eventLine of eventLines) {
+          if (eventLine.trim() === '') continue;
+          if (eventLine.startsWith('data: ')) {
+            const jsonDataString = eventLine.substring(5).trim();
+            if (jsonDataString === '[DONE]') {
+              streamLoop = false;
+              break;
+            }
+            if (jsonDataString) {
+              try {
+                const parsed = JSON.parse(jsonDataString);
+                const choice = parsed.choices?.[0];
+                if (choice) {
+                  const deltaContent = typeof choice.delta?.content === 'string' ? choice.delta.content : '';
+                  if (deltaContent) { // Ensure deltaContent is not empty before appending
+                    accumulatedResponse += deltaContent;
+                    setMessages((prevMessages) =>
+                      prevMessages.map((msg) =>
+                        msg.id === botMessageId
+                          ? { ...msg, content: accumulatedResponse, timestamp: new Date() }
+                          : msg
+                      )
+                    );
                   }
-                } catch (e) {
-                  console.error('Error parsing stream data:', e, jsonDataString);
-                  // Potentially update UI with a stream parsing error
+                  if (choice.finish_reason) {
+                    streamLoop = false;
+                    break;
+                  }
                 }
+              } catch (e) {
+                console.error('Error parsing stream data:', e, jsonDataString);
+                // Potentially update UI with a stream parsing error
               }
             }
           }
         }
-      } else { 
-        const data = await response.json();
-        const botResponseContent = data.choices?.[0]?.message?.content || "Sorry, I couldn't get a response.";
-        accumulatedResponse = botResponseContent; 
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === botMessageId
-              ? { ...msg, content: botResponseContent, timestamp: new Date() }
-              : msg
-          )
-        );
       }
     } catch (error) {
       console.error('Failed to send message or process response:', error);
@@ -219,7 +208,7 @@ export default function ChatPage() {
       }
     }
   };
-  
+
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
 
@@ -228,7 +217,7 @@ export default function ChatPage() {
       <header className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-10 h-[60px]">
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold text-foreground">PyscoutAI</span>
-          <ModelSelector 
+          <ModelSelector
             selectedModelFromParent={currentModel}
             onModelChange={handleModelChange}
           />
@@ -269,3 +258,4 @@ export default function ChatPage() {
 // function handleSuggestionClick(suggestion: string, sendMessageFn: (content: string, isSuggestionClick: boolean) => void) {
 //   sendMessageFn(suggestion, true);
 // }
+
