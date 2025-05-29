@@ -6,6 +6,7 @@ import type { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface MessageBubbleProps {
   message: Partial<Message> & { id: string };
@@ -73,7 +74,33 @@ export const MessageBubble = React.memo(function MessageBubble({ message, isShim
             : 'bg-card text-card-foreground border border-border/50' 
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <div className="break-words">
+          <ReactMarkdown
+            components={{
+              // You can add custom renderers here if needed
+              // For example, to style code blocks or links
+              p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+              ol: ({node, ...props}) => <ol className="list-decimal list-inside my-2 ml-4" {...props} />,
+              ul: ({node, ...props}) => <ul className="list-disc list-inside my-2 ml-4" {...props} />,
+              code: ({node, inline, className, children, ...props}) => {
+                const match = /language-(\w+)/.exec(className || '')
+                return !inline && match ? (
+                  <pre className="bg-muted p-2 rounded-md my-2 overflow-x-auto text-xs">
+                    <code className={className} {...props}>
+                      {String(children).replace(/\n$/, '')}
+                    </code>
+                  </pre>
+                ) : (
+                  <code className="bg-muted/50 px-1 py-0.5 rounded-sm text-xs" {...props}>
+                    {children}
+                  </code>
+                )
+              }
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+        </div>
         {hasMounted && message.timestamp && (
            <p className={cn(
              "text-xs mt-1.5",
