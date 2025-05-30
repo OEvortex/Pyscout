@@ -1,20 +1,25 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Model, ModelApiResponse } from '@/types/chat';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Check, ChevronDown, Loader2, ServerCrash, Sparkles } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, ServerCrash, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 
 const MODEL_CACHE_KEY = 'pyscoutai_models_cache';
 const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
@@ -50,7 +55,7 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
   const [internalSelectedModel, setInternalSelectedModel] = useState<Model | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [clientHasHydrated, setClientHasHydrated] = useState(false);
 
   useEffect(() => {
@@ -158,14 +163,14 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
     if (selectedModelObject) {
       onModelChange(selectedModelObject);
     }
-    setIsOpen(false); 
+    setOpen(false);
   };
 
   if (!clientHasHydrated) {
     return (
       <Button
         variant="ghost"
-        className="flex items-center px-1.5 py-1 h-auto rounded-md hover:bg-accent/20 data-[state=open]:bg-accent/30 focus-visible:ring-1 focus-visible:ring-ring"
+        className="flex items-center px-1.5 py-1 rounded-md"
         disabled={true}
         aria-label="Loading models"
       >
@@ -202,83 +207,91 @@ export function ModelSelector({ selectedModelFromParent, onModelChange }: ModelS
       <>
         <span className="text-sm font-medium">{internalSelectedModel?.name || 'Select Model'}</span>
         <span className="text-sm text-muted-foreground ml-1">(preview)</span>
-        <ChevronDown className={cn("ml-1.5 h-4 w-4 shrink-0 opacity-60 transition-transform duration-200 ease-in-out", isOpen && "rotate-180")} />
+        <ChevronsUpDown className="ml-1.5 h-4 w-4 shrink-0 opacity-60" />
       </>
     );
-     triggerDisabled = isLoading && models.length === 0; 
+    triggerDisabled = isLoading && models.length === 0;
   }
 
-
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center px-2 py-1 h-auto rounded-md hover:bg-accent/10 data-[state=open]:bg-accent/20 focus-visible:ring-1 focus-visible:ring-ring transition-colors duration-150"
+          role="combobox"
+          aria-expanded={open}
+          className="flex items-center px-2 py-1 rounded-md"
           disabled={triggerDisabled}
           aria-label={`Selected model: ${internalSelectedModel?.name || 'Select Model'}`}
         >
           {triggerContent}
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        className={cn(
-            "w-72 sm:w-80 bg-popover text-popover-foreground border-border shadow-xl p-2", 
-            "z-50 rounded-lg", 
-            "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
-            "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
-        )}
-        align="start"
-      >
-        {isLoading && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">Loading models...</DropdownMenuLabel>}
-        {error && clientHasHydrated && <DropdownMenuLabel className="text-destructive text-center py-2">{error}</DropdownMenuLabel>}
-        {!isLoading && !error && models.length === 0 && clientHasHydrated && <DropdownMenuLabel className="text-muted-foreground text-center py-2">No models found</DropdownMenuLabel>}
-        
-        {!isLoading && !error && models.length > 0 && clientHasHydrated && (
-          <>
-            <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground px-2 pt-1 pb-2">Choose your model</DropdownMenuLabel>
-            <ScrollArea viewportClassName="max-h-[260px]" className="pr-1"> 
-              <div className="space-y-1">
-                {models.map((model) => (
-                  <DropdownMenuItem
-                    key={model.id}
-                    onSelect={() => handleModelSelect(model.id)}
-                    className={cn(
-                      "text-sm cursor-pointer py-2 px-3 rounded-md focus:bg-accent/80 focus:text-accent-foreground transition-colors duration-150",
-                      internalSelectedModel?.id === model.id && "bg-primary/80 text-primary-foreground"
-                    )}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex flex-col">
-                        <span className={cn("font-medium", internalSelectedModel?.id === model.id && "text-primary-foreground")}>{model.name}</span>
-                        <span className={cn("text-xs mt-0.5", internalSelectedModel?.id === model.id ? "text-primary-foreground/80" : "text-muted-foreground/80")}>
-                          Owned by: {model.owned_by}
-                        </span>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="p-0">
+        <Command>
+          <CommandInput placeholder="Search models..." className="h-9" />
+          <CommandList>
+            {isLoading && models.length === 0 && clientHasHydrated && (
+              <CommandEmpty>Loading models...</CommandEmpty>
+            )}
+            {error && clientHasHydrated && (
+              <CommandEmpty className="text-destructive">{error}</CommandEmpty>
+            )}
+            {!isLoading && !error && models.length === 0 && clientHasHydrated && (
+              <CommandEmpty>No models found</CommandEmpty>
+            )}
+            {!isLoading && !error && models.length > 0 && clientHasHydrated && (
+              <ScrollArea viewportClassName="max-h-[260px]">
+                <CommandGroup heading="Choose your model">
+                  {models.map((model) => (
+                    <CommandItem
+                      key={model.id}
+                      value={model.id}
+                      onSelect={() => handleModelSelect(model.id)}
+                      className={cn(
+                        internalSelectedModel?.id === model.id
+                          ? "bg-primary text-foreground"
+                          : "cursor-pointer"
+                      )}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col">
+                          <span className={cn("font-medium", internalSelectedModel?.id === model.id && "text-foreground")}>
+                            {model.name}
+                          </span>
+                          <span className={cn("text-xs mt-0.5 text-muted-foreground", internalSelectedModel?.id === model.id && "text-foreground")}>
+                            Owned by: {model.owned_by}
+                          </span>
+                        </div>
+                        {internalSelectedModel?.id === model.id && (
+                          <Check className="h-4 w-4 ml-2 text-foreground shrink-0" />
+                        )}
                       </div>
-                      {internalSelectedModel?.id === model.id && <Check className="h-4 w-4 ml-2 text-primary-foreground shrink-0" />}
-                    </div>
-                  </DropdownMenuItem>
-                ))}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </ScrollArea>
+            )}
+          </CommandList>
+        </Command>
+        {!isLoading && !error && models.length > 0 && clientHasHydrated && (
+          <Card className="border-t">
+            <CardContent className="p-3">
+              <div className="flex items-center w-full mb-1">
+                <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                <CardTitle className="text-sm">Upgrade to PyscoutAI Pro</CardTitle>
               </div>
-            </ScrollArea>
-            <DropdownMenuSeparator className="my-2 bg-border/70" />
-            <DropdownMenuItem className="p-0 focus:bg-transparent cursor-default select-none rounded-md">
-                <div className="flex flex-col items-start px-3 py-2.5 w-full rounded-md hover:bg-accent/10 transition-colors group">
-                    <div className="flex items-center w-full mb-1">
-                        <Sparkles className="h-4 w-4 mr-2 text-primary group-hover:text-primary/80" />
-                        <p className="font-semibold text-sm text-foreground group-hover:text-foreground/90">Upgrade to PyscoutAI Pro</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2.5 group-hover:text-muted-foreground/90">Get our most capable models and features</p>
-                    <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground group-hover:bg-primary/80 transition-colors duration-150">
-                        Upgrade
-                    </Button>
-                </div>
-            </DropdownMenuItem>
-          </>
+              <CardDescription className="text-xs mb-2.5">
+                Get our most capable models and features
+              </CardDescription>
+              <Button size="sm" className="w-full bg-primary text-primary-foreground">
+                Upgrade
+              </Button>
+            </CardContent>
+          </Card>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverContent>
+    </Popover>
   );
 }
 

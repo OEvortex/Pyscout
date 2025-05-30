@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import type { Message, Model } from '@/types/chat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { InputBar } from '@/components/chat/InputBar';
@@ -38,7 +37,7 @@ const WELCOME_MESSAGES = [
 
 const WELCOME_MESSAGE_INTERVAL = 6000; // 6 seconds
 
-export default function ChatPage() {
+function ChatPageContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -386,5 +385,13 @@ export default function ChatPage() {
       </div>
       <InputBar onSendMessage={handleSendMessage} isLoading={isLoading} textareaRef={textareaRef} />
     </main>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatPageContent />
+    </Suspense>
   );
 }
