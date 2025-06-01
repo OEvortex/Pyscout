@@ -8,6 +8,7 @@ import { Plus, Image as ImageIcon, Brain, GalleryVerticalEnd, Mic, MicOff, Send 
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from "@/hooks/use-toast";
+import { TokenCounter } from '@/components/ui/TokenCounter';
 
 interface InputBarProps {
   onSendMessage: (content: string, isSuggestionClick?: boolean) => void;
@@ -22,9 +23,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
   const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const textareaRefToUse = externalTextareaRef || internalTextareaRef;
   const { toast } = useToast();
-
   const [isListening, setIsListening] = useState(false);
-  const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
+  const speechRecognitionRef = useRef<any>(null);
   const textBeforeSpeechRef = useRef<string>(''); 
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
 
@@ -51,7 +51,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const SpeechRecognitionAPI = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
       console.warn("Speech recognition not supported by this browser.");
       setIsSpeechSupported(false);
@@ -70,9 +70,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
     recognition.onend = () => {
       setIsListening(false);
-    };
-
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    };    recognition.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
       setIsListening(false);
       let errorMessage = 'An error occurred during speech recognition.';
@@ -90,7 +88,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       });
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let combinedTranscript = '';
       let currentSegmentIsFinal = false;
 
@@ -200,8 +198,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       description: `${featureName} feature will be available in a future update.`,
     });
   };
-  
-  const RightSideButton = () => {
+    const RightSideButton = () => {
     if (isListening) {
       return (
         <TooltipProvider>
@@ -211,14 +208,14 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 p-0 rounded-full text-primary hover:bg-primary/10 transition-colors duration-200"
+                className="h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group/btn border border-red-400/50"
                 onClick={handleMicClick}
                 aria-label="Stop listening"
               >
-                <MicOff className="h-5 w-5" />
+                <MicOff className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent><p>Stop listening</p></TooltipContent>
+            <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50"><p>Stop listening</p></TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
@@ -232,14 +229,14 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                 type="submit"
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 p-0 rounded-full text-primary hover:bg-primary/10 transition-colors duration-200"
+                className="h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group/btn border border-primary/50"
                 disabled={isLoading}
                 aria-label="Send message"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:translate-x-0.5 transition-all duration-200" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent><p>Send message</p></TooltipContent>
+            <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50"><p>Send message</p></TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
@@ -252,97 +249,136 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
               type="button"
               variant="ghost"
               size="icon"
-              className="h-10 w-10 p-0 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200"
+              className="h-12 w-12 p-0 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/15 transition-all duration-300 group/btn border border-transparent hover:border-primary/20"
               onClick={handleMicClick}
               disabled={isLoading || !isSpeechSupported}
               aria-label="Voice input"
             >
-              <Mic className="h-5 w-5" />
+              <Mic className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent><p>{isSpeechSupported ? "Voice input" : "Voice input not supported"}</p></TooltipContent>
+          <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50">
+            <p>{isSpeechSupported ? "Voice input" : "Voice input not supported"}</p>
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     );
   };
 
-
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className={cn(
-        "p-3 sm:p-4 bg-transparent w-full max-w-3xl mx-auto group",
-      )}
-    >
-      <div className={cn(
-        "bg-card text-card-foreground p-3.5 rounded-2xl border border-input shadow-lg flex flex-col gap-3", // Changed from rounded-full to rounded-2xl
-        "transition-all duration-300 ease-in-out group-focus-within:shadow-primary/20 group-focus-within:border-primary/70 group-focus-within:ring-2 group-focus-within:ring-primary/50"
-      )}>
-        <div className="flex items-end space-x-2"> 
-          <Textarea
-            ref={textareaRefToUse}
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask PyscoutAI..."
-            className="flex-grow resize-none overflow-y-hidden p-2.5 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px]"
-            rows={1}
-            disabled={isLoading}
-            aria-label="Chat message input"
-          />
-          <div className="shrink-0 self-end mb-px"> 
-             <RightSideButton />
+    <div className="relative p-4 sm:p-6">
+      {/* Background glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
+      
+      <form 
+        onSubmit={handleSubmit} 
+        className={cn(
+          "relative w-full max-w-4xl mx-auto group",
+        )}
+      >
+        <div className={cn(
+          "relative bg-card/90 backdrop-blur-xl text-card-foreground p-4 rounded-3xl border border-border/50 shadow-2xl flex flex-col gap-4",
+          "transition-all duration-500 ease-in-out",
+          "group-focus-within:shadow-primary/30 group-focus-within:border-primary/50 group-focus-within:bg-card/95",
+          "before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/5 before:via-purple-500/5 before:to-pink-500/5 before:opacity-0 before:transition-opacity before:duration-500",
+          "group-focus-within:before:opacity-100"
+        )}>
+          {/* Main input area */}
+          <div className="flex items-end space-x-3 relative z-10"> 
+            <Textarea
+              ref={textareaRefToUse}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask PyscoutAI anything..."
+              className="flex-grow resize-none overflow-y-hidden p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px] placeholder:text-muted-foreground/60 text-foreground"
+              rows={1}
+              disabled={isLoading}
+              aria-label="Chat message input"
+            />            <div className="shrink-0 self-end mb-1 flex items-center gap-2"> 
+              {/* Token count indicator (compact for right side) */}
+              {inputValue.length > 0 && (
+                <div className="text-xs text-muted-foreground/60 hidden sm:block">
+                  <TokenCounter text={inputValue} compact={true} />
+                </div>
+              )}
+              <RightSideButton />
+            </div>
+          </div>
+          
+          {/* Action buttons row */}
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-xl disabled:opacity-50 transition-all duration-300 group/btn"
+                      disabled={isLoading}
+                      aria-label="Attach"
+                      onClick={() => showComingSoonToast("Attach file")}
+                    >
+                      <Plus className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-card/95 backdrop-blur-sm border-border/50">
+                    <p>Attach file</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+                {[
+                { icon: ImageIcon, label: "Image", tip: "Image Generation", action: () => showComingSoonToast("Image Generation"), gradient: "from-blue-400 to-cyan-400" },
+                { icon: Brain, label: "Research", tip: "Deep research", action: () => showComingSoonToast("Deep Research"), gradient: "from-purple-400 to-indigo-400" },
+                { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas", action: () => showComingSoonToast("Canvas"), gradient: "from-pink-400 to-rose-400" },
+              ].map((item, index) => (
+                <TooltipProvider key={index}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "text-muted-foreground hover:text-primary hover:bg-gradient-to-r hover:text-white rounded-xl px-3 py-2 h-9 text-sm font-medium disabled:opacity-50 transition-all duration-300 group/btn border border-transparent hover:border-white/20",
+                          `hover:bg-gradient-to-r hover:${item.gradient} hover:shadow-lg`
+                        )}
+                        disabled={isLoading}
+                        aria-label={item.label}
+                        onClick={item.action}
+                      >
+                        <item.icon className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform duration-200" />
+                        {item.label}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-card/95 backdrop-blur-sm border-border/50">
+                      <p>{item.tip}</p>
+                    </TooltipContent>                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
+            
+            {/* Status indicators */}
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground/60">
+              {isListening && (
+                <div className="flex items-center space-x-1 animate-pulse">
+                  <div className="h-2 w-2 bg-red-400 rounded-full animate-ping" />
+                  <span>Listening...</span>
+                </div>
+              )}
+              {isLoading && (
+                <div className="flex items-center space-x-1">
+                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" />
+                  <span>Processing...</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex items-center space-x-1.5 pl-1">
-           <TooltipProvider>
-             <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-lg disabled:opacity-50 transition-colors duration-200"
-                    disabled={isLoading}
-                    aria-label="Attach"
-                     onClick={() => showComingSoonToast("Attach file")}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent side="top"><p>Attach file</p></TooltipContent>
-             </Tooltip>
-           </TooltipProvider>
-          {[
-            { icon: ImageIcon, label: "Image", tip: "Process image", action: () => showComingSoonToast("Image Processing") },
-            { icon: Brain, label: "Deep Research", tip: "Deep research", action: () => showComingSoonToast("Deep Research") },
-            { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas", action: () => showComingSoonToast("Canvas") },
-          ].map((item, index) => (
-            <TooltipProvider key={index}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg px-2.5 py-1.5 h-auto text-sm disabled:opacity-50 transition-colors duration-200"
-                    disabled={isLoading}
-                    aria-label={item.label}
-                    onClick={item.action}
-                  >
-                    <item.icon className="h-4 w-4 mr-1.5" />
-                    {item.label}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>{item.tip}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
 

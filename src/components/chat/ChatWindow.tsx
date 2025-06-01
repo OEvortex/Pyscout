@@ -32,19 +32,38 @@ export function ChatWindow({ messages, isLoading }: ChatWindowProps) {
   if (messages.length === 0 && !isLoading) {
     return <div className="flex-grow" />; // Takes up space but shows nothing
   }
-
   return (
-    <ScrollArea className="flex-grow min-h-0 w-full max-w-3xl mx-auto" viewportRef={viewportRef} ref={scrollAreaRef}>
-      <div className="p-4 sm:p-6 space-y-4"> {/* Increased spacing and padding */}
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
+    <ScrollArea className="flex-grow min-h-0 w-full max-w-4xl mx-auto relative" viewportRef={viewportRef} ref={scrollAreaRef}>
+      <div className="p-4 sm:p-6 space-y-6 min-h-full"> {/* Increased spacing and padding */}
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--primary)) 1px, transparent 1px), radial-gradient(circle at 75% 75%, hsl(var(--primary)) 1px, transparent 1px)`,
+            backgroundSize: '30px 30px'
+          }} />
+        </div>
+        
+        {messages.map((msg, index) => (
+          <div 
+            key={msg.id}
+            className="relative animate-in fade-in-0 slide-in-from-bottom-4 duration-500 ease-out"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <MessageBubble message={msg} />
+          </div>
         ))}
+        
         {isLoading && (
-          <MessageBubble 
-            message={{ id: 'shimmer-loading', role: 'assistant', content: '', timestamp: new Date() }} 
-            isShimmer 
-          />
+          <div className="relative animate-in fade-in-0 slide-in-from-bottom-4 duration-500 ease-out">
+            <MessageBubble 
+              message={{ id: 'shimmer-loading', role: 'assistant', content: '', timestamp: new Date() }} 
+              isShimmer 
+            />
+          </div>
         )}
+        
+        {/* Spacer for better last message visibility */}
+        <div className="h-4" />
       </div>
     </ScrollArea>
   );

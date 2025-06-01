@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 
 const CUSTOM_SYSTEM_PROMPT_KEY = 'pyscoutai_custom_system_prompt';
 const DEFAULT_SYSTEM_PROMPT = `You are PyscoutAI, an advanced and versatile AI assistant designed to be exceptionally helpful, knowledgeable, and engaging. Your primary goal is to assist users by providing comprehensive and accurate information, generating creative text formats, answering questions thoughtfully, and performing tasks efficiently. Maintain a friendly, approachable, and slightly enthusiastic tone. You are capable of understanding complex queries, breaking down problems, and explaining concepts clearly. Feel free to use your broad knowledge base, but always prioritize helpfulness and clarity in your responses. If you're unsure about something, it's better to say so than to provide incorrect information. Strive to make every interaction a positive and productive one for the user.`;
-const ANIMATION_DURATION = 1200; // ms - Adjusted to match new animation duration
+const ANIMATION_DURATION = 250; // ms - Quick and smooth close animation
 
 export default function SettingsPage() {
   const [customPrompt, setCustomPrompt] = useState('');
@@ -102,25 +102,26 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="flex flex-col min-h-screen overflow-y-auto">
-      <div className={cn(
+    <main className="flex flex-col min-h-screen overflow-y-auto">      <div className={cn(
           "flex flex-col flex-1 p-4 md:p-6 bg-transparent relative", 
-          isClosing && 'animate-vortex-out' 
+          isClosing && 'animate-settings-close' 
         )}
       >
         <header className="mb-6 flex items-start justify-between sticky top-0 bg-background/80 dark:bg-background/90 backdrop-blur-sm py-4 z-10 -mx-4 md:-mx-6 px-4 md:px-6 border-b">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">Settings</h1>
             <p className="text-muted-foreground text-sm">Manage your PyscoutAI preferences.</p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={handleCloseSettings} className="ml-auto rounded-full hover:bg-accent/20">
-            <X className="h-5 w-5" />
+          </div>          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleCloseSettings} 
+            className="ml-auto rounded-full hover:bg-accent/20 hover:scale-105 transition-all duration-200 group"
+          >
+            <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
             <span className="sr-only">Close settings</span>
           </Button>
-        </header>
-
-        <div className="space-y-8 mt-2 animate-in fade-in-50 duration-300">
-          <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-border/70">
+        </header>        <div className="space-y-8 mt-2 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
+          <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-border/70 settings-card-hover animate-settings-section">
             <CardHeader>
               <CardTitle className="text-foreground">System Prompt</CardTitle>
               <CardDescription>
@@ -141,7 +142,7 @@ export default function SettingsPage() {
                     className="flex-grow"
                     disabled={!isClient || isGenerating}
                   />
-                  <Button onClick={handleGeneratePromptWithAI} disabled={!isClient || isGenerating || !promptIdea.trim()} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button onClick={handleGeneratePromptWithAI} disabled={!isClient || isGenerating || !promptIdea.trim()} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground button-smooth">
                     {isGenerating ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -164,12 +165,11 @@ export default function SettingsPage() {
                   className="min-h-[150px] text-sm focus:border-primary"
                   disabled={!isClient}
                 />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={handleSavePrompt} disabled={!isClient || !customPrompt.trim()} className="w-full sm:w-auto">
+              </div>              <div className="flex flex-col sm:flex-row gap-2">
+                <Button onClick={handleSavePrompt} disabled={!isClient || !customPrompt.trim()} className="w-full sm:w-auto button-smooth">
                   <Save className="mr-2 h-4 w-4" /> Save Prompt
                 </Button>
-                <Button variant="outline" onClick={handleResetPrompt} disabled={!isClient} className="w-full sm:w-auto">
+                <Button variant="outline" onClick={handleResetPrompt} disabled={!isClient} className="w-full sm:w-auto button-smooth">
                   <RotateCcw className="mr-2 h-4 w-4" /> Reset to Default
                 </Button>
               </div>
@@ -182,9 +182,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Separator />
-
-          <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-border/70">
+          <Separator />          <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-border/70 settings-card-hover animate-settings-section">
             <CardHeader>
               <CardTitle className="text-foreground">Appearance</CardTitle>
               <CardDescription>Choose how PyscoutAI looks on your device.</CardDescription>

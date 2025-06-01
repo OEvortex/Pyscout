@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  reactStrictMode: false, // Disable React strict mode to reduce hydration warnings
   images: {
     remotePatterns: [
       {
