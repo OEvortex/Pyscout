@@ -9,7 +9,7 @@ import { ModelSelector } from '@/components/chat/ModelSelector';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Sparkles, CircleUserRound, Bot, Image as ImageIcon, Brain, GalleryVerticalEnd, HelpCircle, LogOut, UserCog, History, Settings } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,7 +50,6 @@ export default function ChatPage() {
   const [clientMounted, setClientMounted] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -69,17 +68,17 @@ export default function ChatPage() {
   }, [messages.length, isLoading]);
 
   useEffect(() => {
-    const newChatParam = searchParams.get('newChat');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const newChatParam = params.get('newChat');
     if (newChatParam === 'true') {
       setMessages([]);
       setIsLoading(false);
       setShowWelcome(true);
-      if (typeof window !== 'undefined') {
-        const currentPath = window.location.pathname;
-        router.replace(currentPath, { scroll: false }); 
-      }
+      const currentPath = window.location.pathname;
+      router.replace(currentPath, { scroll: false });
     }
-  }, [searchParams, router]);
+  }, [router]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
