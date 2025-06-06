@@ -593,6 +593,11 @@ export default function ChatPage() {
                     >
                       {feature.text}
                     </span>
+                    <div
+                      className="w-[164px] h-[52px] bg-[#E3F3FF]"
+                      data-oid="t:u9l_e"
+                      key="olk-lBeG"
+                    ></div>
                   </div>
                 ))}
               </div>

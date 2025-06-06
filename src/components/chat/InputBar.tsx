@@ -240,7 +240,7 @@ export function InputBar({
                   "h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-500 group/btn border border-red-400/50",
                   "animate-pulse hover:animate-none",
                   "hover:scale-110 hover:rotate-3 active:scale-95",
-                  "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-red-400 before:to-red-500 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-20"
+                  "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-red-400 before:to-red-500 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-20",
                 )}
                 onClick={handleMicClick}
                 aria-label="Stop listening"
@@ -276,7 +276,7 @@ export function InputBar({
                   "hover:scale-110 hover:-rotate-3 active:scale-95",
                   "animate-in fade-in-0 scale-in-95 duration-300",
                   "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-primary/50 before:to-purple-500/50 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-30",
-                  "after:absolute after:inset-0 after:rounded-2xl after:bg-white/10 after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-100"
+                  "after:absolute after:inset-0 after:rounded-2xl after:bg-white/10 after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-100",
                 )}
                 disabled={isLoading}
                 aria-label="Send message"
@@ -309,7 +309,7 @@ export function InputBar({
               className={cn(
                 "h-12 w-12 p-0 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/15 transition-all duration-500 group/btn border border-transparent hover:border-primary/20",
                 "hover:scale-105 hover:rotate-1 active:scale-95",
-                "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-primary/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100"
+                "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-primary/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100",
               )}
               onClick={handleMicClick}
               disabled={isLoading || !isSpeechSupported}
@@ -366,22 +366,31 @@ export function InputBar({
             className="flex items-end space-x-3 relative z-10 group/input"
             data-oid="j2yo2-6"
           >
-            <div className="relative flex-grow">
+            <div className="relative flex-grow" data-oid="96.amyp">
               {/* Animated placeholder overlay */}
               {!inputValue && !isListening && (
-                <div className="absolute inset-0 pointer-events-none z-10 flex items-center px-4">
-                  <span className="text-muted-foreground/60 text-base animate-pulse">
+                <div
+                  className="absolute inset-0 pointer-events-none z-10 flex items-center px-4"
+                  data-oid="ntk9zm9"
+                >
+                  <span
+                    className="text-muted-foreground/60 text-base animate-pulse"
+                    data-oid="9ix5vi6"
+                  >
                     Ask PyscoutAI anything...
                   </span>
                 </div>
               )}
-              
+
               {/* Typing indicator glow */}
-              <div className={cn(
-                "absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 transition-all duration-300 blur-sm",
-                inputValue && "opacity-30 animate-pulse"
-              )} />
-              
+              <div
+                className={cn(
+                  "absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 transition-all duration-300 blur-sm",
+                  inputValue && "opacity-30 animate-pulse",
+                )}
+                data-oid="90ghf8m"
+              />
+
               <Textarea
                 ref={textareaRefToUse}
                 value={inputValue}
@@ -392,14 +401,15 @@ export function InputBar({
                   "flex-grow resize-none overflow-y-hidden p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px] text-foreground relative z-20",
                   "transition-all duration-300 ease-out",
                   "focus:scale-[1.01] focus:shadow-inner",
-                  isListening && "animate-pulse"
+                  isListening && "animate-pulse",
                 )}
                 rows={1}
                 disabled={isLoading}
                 aria-label="Chat message input"
                 data-oid="cgqw-83"
               />
-            </div<div
+            </div>
+            <div
               className="shrink-0 self-end mb-1 flex items-center gap-2"
               data-oid="hxjp.-2"
             >
@@ -408,7 +418,7 @@ export function InputBar({
                 <div
                   className={cn(
                     "text-xs text-muted-foreground/60 hidden sm:block transition-all duration-300 ease-out",
-                    "animate-in fade-in-0 slide-in-from-right-2"
+                    "animate-in fade-in-0 slide-in-from-right-2",
                   )}
                   data-oid="5v1.de1"
                 >
@@ -419,7 +429,10 @@ export function InputBar({
                   />
                 </div>
               )}
-              <div className="animate-in fade-in-0 slide-in-from-right-1 duration-300">
+              <div
+                className="animate-in fade-in-0 slide-in-from-right-1 duration-300"
+                data-oid="4qlxfqu"
+              >
                 <RightSideButton data-oid="5ts9z.n" />
               </div>
             </div>
@@ -430,7 +443,10 @@ export function InputBar({
             className="flex items-center justify-between relative z-10 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 delay-100"
             data-oid="ga3ybg2"
           >
-            <div className="flex items-center space-x-2 group/actions" data-oid="fb31jsl">
+            <div
+              className="flex items-center space-x-2 group/actions"
+              data-oid="fb31jsl"
+            >
               <TooltipProvider data-oid="15t49_c">
                 <Tooltip data-oid="riez5m:">
                   <TooltipTrigger asChild data-oid="0txuvwa">
@@ -442,7 +458,7 @@ export function InputBar({
                         "h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-xl disabled:opacity-50 transition-all duration-500 group/btn",
                         "hover:scale-110 hover:rotate-90 active:scale-95",
                         "before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-primary/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100",
-                        "group-hover/actions:translate-y-0 translate-y-1 group-hover/actions:opacity-100 opacity-70"
+                        "group-hover/actions:translate-y-0 translate-y-1 group-hover/actions:opacity-100 opacity-70",
                       )}
                       disabled={isLoading}
                       aria-label="Attach"
@@ -496,12 +512,12 @@ export function InputBar({
                         size="sm"
                         className={cn(
                           "text-muted-foreground hover:text-white rounded-xl px-3 py-2 h-9 text-sm font-medium disabled:opacity-50 transition-all duration-500 group/btn border border-transparent hover:border-white/30 relative overflow-hidden",
-                          `hover:bg-gradient-to-r hover:${item.gradient} hover:shadow-lg hover:shadow-${item.gradient.split('-')[1]}-500/25`,
+                          `hover:bg-gradient-to-r hover:${item.gradient} hover:shadow-lg hover:shadow-${item.gradient.split("-")[1]}-500/25`,
                           "hover:scale-105 hover:-translate-y-0.5 active:scale-95",
                           "before:absolute before:inset-0 before:bg-gradient-to-r before:opacity-0 before:transition-opacity before:duration-300",
                           `before:${item.gradient} hover:before:opacity-20`,
                           "group-hover/actions:translate-y-0 translate-y-1 group-hover/actions:opacity-100 opacity-70",
-                          `animate-in fade-in-0 slide-in-from-bottom-2 duration-300 delay-${(index + 2) * 100}`
+                          `animate-in fade-in-0 slide-in-from-bottom-2 duration-300 delay-${(index + 2) * 100}`,
                         )}
                         disabled={isLoading}
                         aria-label={item.label}
@@ -512,7 +528,10 @@ export function InputBar({
                           className="h-4 w-4 mr-2 group-hover/btn:scale-125 group-hover/btn:rotate-12 transition-all duration-500"
                           data-oid="1ona9d8"
                         />
-                        <span className="relative z-10">{item.label}</span>
+
+                        <span className="relative z-10" data-oid="-.er-vc">
+                          {item.label}
+                        </span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent
@@ -537,28 +556,63 @@ export function InputBar({
                   className="flex items-center space-x-2 animate-in fade-in-0 slide-in-from-right-2 duration-300"
                   data-oid="09fjwkp"
                 >
-                  <div className="flex items-center space-x-1">
+                  <div
+                    className="flex items-center space-x-1"
+                    data-oid="4ha4ao0"
+                  >
                     <div
                       className="h-2 w-2 bg-red-400 rounded-full animate-ping"
                       data-oid="mgzmdc-"
                     />
-                    <div className="h-1.5 w-1.5 bg-red-500 rounded-full animate-pulse delay-75" />
-                    <div className="h-1 w-1 bg-red-600 rounded-full animate-pulse delay-150" />
+
+                    <div
+                      className="h-1.5 w-1.5 bg-red-500 rounded-full animate-pulse delay-75"
+                      data-oid="ldk00h_"
+                    />
+
+                    <div
+                      className="h-1 w-1 bg-red-600 rounded-full animate-pulse delay-150"
+                      data-oid="n0dssh:"
+                    />
                   </div>
-                  <span className="animate-pulse font-medium text-red-400" data-oid="f9-n64b">Listening...</span>
+                  <span
+                    className="animate-pulse font-medium text-red-400"
+                    data-oid="f9-n64b"
+                  >
+                    Listening...
+                  </span>
                 </div>
               )}
               {isLoading && (
-                <div className="flex items-center space-x-2 animate-in fade-in-0 slide-in-from-right-2 duration-300" data-oid="m_hz6ko">
-                  <div className="flex items-center space-x-1">
+                <div
+                  className="flex items-center space-x-2 animate-in fade-in-0 slide-in-from-right-2 duration-300"
+                  data-oid="m_hz6ko"
+                >
+                  <div
+                    className="flex items-center space-x-1"
+                    data-oid="ot0yvsu"
+                  >
                     <div
                       className="h-2 w-2 bg-primary rounded-full animate-bounce"
                       data-oid="_6:s515"
                     />
-                    <div className="h-1.5 w-1.5 bg-primary/80 rounded-full animate-bounce delay-75" />
-                    <div className="h-1 w-1 bg-primary/60 rounded-full animate-bounce delay-150" />
+
+                    <div
+                      className="h-1.5 w-1.5 bg-primary/80 rounded-full animate-bounce delay-75"
+                      data-oid="-vsn7ql"
+                    />
+
+                    <div
+                      className="h-1 w-1 bg-primary/60 rounded-full animate-bounce delay-150"
+                      data-oid="po7_j61"
+                    />
                   </div>
-                  <span className="animate-pulse font-medium text-primary" data-oid="m5q4kpy">Processing...</span>
+                  <span
+                    className="animate-pulse font-medium text-primary"
+                    data-oid="m5q4kpy"
+                  >
+                    Processing...
+                  </span>
                 </div>
               )}
             </div>
