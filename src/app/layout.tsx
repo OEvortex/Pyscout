@@ -12,22 +12,22 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning data-oid="12:c2hz">
+    <html lang="en" suppressHydrationWarning data-oid="iefzxg3">
       <body
         className="antialiased font-sans"
         suppressHydrationWarning
-        data-oid="wxpb0os"
+        data-oid="059e64g"
       >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark" // Default to dark theme like Gemini
           enableSystem
           disableTransitionOnChange
-          data-oid="1pjh7_n"
+          data-oid="fouc.d6"
         >
           {/* Removed SidebarProvider and AppSidebar */}
           {children}
-          <Toaster data-oid="7o34:k_" />
+          <Toaster data-oid="2211p.g" />
         </ThemeProvider>
       </body>
     </html>

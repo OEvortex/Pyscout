@@ -11,6 +11,12 @@ import {
   Mic,
   MicOff,
   Send,
+  Settings,
+  Search,
+  Code,
+  Lightbulb,
+  ChevronDown,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -19,11 +25,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { TokenCounter } from "@/components/ui/TokenCounter";
 
 interface InputBarProps {
-  onSendMessage: (content: string, isSuggestionClick?: boolean) => void;
+  onSendMessage: (content: string, isSuggestionClick?: boolean, toolType?: string) => void;
   isLoading: boolean;
   textareaRef?: React.RefObject<HTMLTextAreaElement>;
 }
@@ -36,6 +48,7 @@ export function InputBar({
   textareaRef: externalTextareaRef,
 }: InputBarProps) {
   const [inputValue, setInputValue] = useState("");
+  const [activeTools, setActiveTools] = useState<string[]>([]);
   const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const textareaRefToUse = externalTextareaRef || internalTextareaRef;
   const { toast } = useToast();
@@ -161,9 +174,7 @@ export function InputBar({
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(event.target.value);
     textBeforeSpeechRef.current = event.target.value;
-  };
-
-  const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+  };  const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault();
     if (isListening) {
       toast({
@@ -173,7 +184,9 @@ export function InputBar({
       return;
     }
     if (inputValue.trim() && !isLoading) {
-      onSendMessage(inputValue.trim());
+      // Pass the active tools along with the message
+      const toolsData = activeTools.length > 0 ? JSON.stringify({ tools: activeTools }) : undefined;
+      onSendMessage(inputValue.trim(), false, toolsData);
       setInputValue("");
       textBeforeSpeechRef.current = "";
       if (textareaRefToUse.current) {
@@ -218,6 +231,37 @@ export function InputBar({
         });
       }
     }
+  };  const handleToolSelection = (toolType: string) => {
+    setActiveTools(prevTools => {
+      if (prevTools.includes(toolType)) {
+        // Remove tool if already active
+        return prevTools.filter(tool => tool !== toolType);
+      } else {
+        // Add tool if not active
+        return [...prevTools, toolType];
+      }
+    });
+  };
+
+  const removeActiveTool = (toolType: string) => {
+    setActiveTools(prevTools => prevTools.filter(tool => tool !== toolType));
+  };
+
+  const getToolDisplayName = (toolType: string) => {
+    switch (toolType) {
+      case "web_search":
+        return "Web Search";
+      case "image_generation":
+        return "Image Generation";
+      case "deep_research":
+        return "Deep Research";
+      case "think_longer":
+        return "Think Longer";
+      case "canvas":
+        return "Canvas";
+      default:
+        return toolType;
+    }
   };
 
   const showComingSoonToast = (featureName: string) => {
@@ -229,34 +273,29 @@ export function InputBar({
   const RightSideButton = () => {
     if (isListening) {
       return (
-        <TooltipProvider data-oid="rscg5r.">
-          <Tooltip data-oid=":.mynv0">
-            <TooltipTrigger asChild data-oid="f1t9b5-">
+        <TooltipProvider data-oid="egp.38p">
+          <Tooltip data-oid="rdi9guk">
+            <TooltipTrigger asChild data-oid="kek-6pz">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-500 group/btn border border-red-400/50",
-                  "animate-pulse hover:animate-none",
-                  "hover:scale-110 hover:rotate-3 active:scale-95",
-                  "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-red-400 before:to-red-500 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-20",
-                )}
+                className="h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group/btn border border-red-400/50"
                 onClick={handleMicClick}
                 aria-label="Stop listening"
-                data-oid="13fq2ty"
+                data-oid="mnni9t."
               >
                 <MicOff
-                  className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:rotate-12 transition-all duration-300"
-                  data-oid="nn:yf1c"
+                  className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200"
+                  data-oid="n-mdlxi"
                 />
               </Button>
             </TooltipTrigger>
             <TooltipContent
-              className="bg-card/95 backdrop-blur-sm border-border/50 animate-in fade-in-0 slide-in-from-bottom-2 duration-200"
-              data-oid="x76e2k0"
+              className="bg-card/95 backdrop-blur-sm border-border/50"
+              data-oid="f-herwy"
             >
-              <p data-oid="k:d4i4j">Stop listening</p>
+              <p data-oid="55wulcj">Stop listening</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -264,69 +303,59 @@ export function InputBar({
     }
     if (inputValue.trim() && !isListening) {
       return (
-        <TooltipProvider data-oid="6d5xc37">
-          <Tooltip data-oid="7x2yyh:">
-            <TooltipTrigger asChild data-oid="jp1h1l5">
+        <TooltipProvider data-oid="vncvkxa">
+          <Tooltip data-oid="7iu8ri0">
+            <TooltipTrigger asChild data-oid="w8zb:.4">
               <Button
                 type="submit"
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-500 group/btn border border-primary/50",
-                  "hover:scale-110 hover:-rotate-3 active:scale-95",
-                  "animate-in fade-in-0 scale-in-95 duration-300",
-                  "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-primary/50 before:to-purple-500/50 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-30",
-                  "after:absolute after:inset-0 after:rounded-2xl after:bg-white/10 after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-100",
-                )}
+                className="h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group/btn border border-primary/50"
                 disabled={isLoading}
                 aria-label="Send message"
-                data-oid="talhwe8"
+                data-oid="aulz08m"
               >
                 <Send
-                  className="h-5 w-5 group-hover/btn:scale-125 group-hover/btn:translate-x-1 transition-all duration-300"
-                  data-oid="xwqwafu"
+                  className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:translate-x-0.5 transition-all duration-200"
+                  data-oid="xrneq7k"
                 />
               </Button>
             </TooltipTrigger>
             <TooltipContent
-              className="bg-card/95 backdrop-blur-sm border-border/50 animate-in fade-in-0 slide-in-from-bottom-2 duration-200"
-              data-oid="yyulg9h"
+              className="bg-card/95 backdrop-blur-sm border-border/50"
+              data-oid="8lzuy15"
             >
-              <p data-oid="l:ou_2n">Send message</p>
+              <p data-oid="aqg9z-u">Send message</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
     }
     return (
-      <TooltipProvider data-oid="izb2fhh">
-        <Tooltip data-oid="8wk8poc">
-          <TooltipTrigger asChild data-oid="d00oq0w">
+      <TooltipProvider data-oid="jt18vpx">
+        <Tooltip data-oid="4s6cr4r">
+          <TooltipTrigger asChild data-oid="si8hdsv">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className={cn(
-                "h-12 w-12 p-0 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/15 transition-all duration-500 group/btn border border-transparent hover:border-primary/20",
-                "hover:scale-105 hover:rotate-1 active:scale-95",
-                "before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-primary/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100",
-              )}
+              className="h-12 w-12 p-0 rounded-2xl text-muted-foreground hover:text-primary hover:bg-primary/15 transition-all duration-300 group/btn border border-transparent hover:border-primary/20"
               onClick={handleMicClick}
               disabled={isLoading || !isSpeechSupported}
               aria-label="Voice input"
-              data-oid="a9siik0"
+              data-oid="2n4omer"
             >
               <Mic
-                className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:-rotate-6 transition-all duration-300"
-                data-oid="ljxzd5a"
+                className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200"
+                data-oid="gpjywyt"
               />
             </Button>
           </TooltipTrigger>
           <TooltipContent
-            className="bg-card/95 backdrop-blur-sm border-border/50 animate-in fade-in-0 slide-in-from-bottom-2 duration-200"
-            data-oid="_j38f93"
+            className="bg-card/95 backdrop-blur-sm border-border/50"
+            data-oid="ax47:ja"
           >
-            <p data-oid="3o-goy_">
+            <p data-oid="gxxf3oc">
               {isSpeechSupported ? "Voice input" : "Voice input not supported"}
             </p>
           </TooltipContent>
@@ -336,283 +365,227 @@ export function InputBar({
   };
 
   return (
-    <div className="relative p-4 sm:p-6" data-oid="lbrgxb2">
+    <div className="relative p-4 sm:p-6" data-oid="9qjdih.">
       {/* Background glow effect */}
       <div
         className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none"
-        data-oid="ivj7wcy"
+        data-oid="jd8pa18"
       />
 
       <form
         onSubmit={handleSubmit}
         className={cn("relative w-full max-w-4xl mx-auto group")}
-        data-oid="e6ol.y0"
+        data-oid="s90yvze"
       >
         <div
           className={cn(
             "relative bg-card/90 backdrop-blur-xl text-card-foreground p-4 rounded-3xl border border-border/50 shadow-2xl flex flex-col gap-4",
-            "transition-all duration-700 ease-out transform-gpu",
-            "group-focus-within:shadow-primary/40 group-focus-within:border-primary/60 group-focus-within:bg-card/98 group-focus-within:scale-[1.02]",
-            "before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/8 before:via-purple-500/8 before:to-pink-500/8 before:opacity-0 before:transition-all before:duration-700 before:ease-out",
-            "after:absolute after:inset-0 after:rounded-3xl after:bg-gradient-to-br after:from-transparent after:via-white/5 after:to-transparent after:opacity-0 after:transition-all after:duration-500",
-            "group-focus-within:before:opacity-100 group-focus-within:after:opacity-100",
-            "hover:shadow-lg hover:shadow-primary/20 hover:border-primary/30",
-            "animate-in fade-in-0 slide-in-from-bottom-4 duration-500",
+            "transition-all duration-500 ease-in-out",
+            "group-focus-within:shadow-primary/30 group-focus-within:border-primary/50 group-focus-within:bg-card/95",
+            "before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/5 before:via-purple-500/5 before:to-pink-500/5 before:opacity-0 before:transition-opacity before:duration-500",
+            "group-focus-within:before:opacity-100",
           )}
-          data-oid="l5t319z"
+          data-oid="x2x7fk2"
         >
           {/* Main input area */}
           <div
-            className="flex items-end space-x-3 relative z-10 group/input"
-            data-oid="j2yo2-6"
+            className="flex items-end space-x-3 relative z-10"
+            data-oid="fyryq3u"
           >
-            <div className="relative flex-grow" data-oid="96.amyp">
-              {/* Animated placeholder overlay */}
-              {!inputValue && !isListening && (
-                <div
-                  className="absolute inset-0 pointer-events-none z-10 flex items-center px-4"
-                  data-oid="ntk9zm9"
-                >
-                  <span
-                    className="text-muted-foreground/60 text-base animate-pulse"
-                    data-oid="9ix5vi6"
-                  >
-                    Ask PyscoutAI anything...
-                  </span>
-                </div>
-              )}
+            <Textarea
+              ref={textareaRefToUse}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask PyscoutAI anything..."
+              className="flex-grow resize-none overflow-y-hidden p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px] placeholder:text-muted-foreground/60 text-foreground"
+              rows={1}
+              disabled={isLoading}
+              aria-label="Chat message input"
+              data-oid="lw-p1pu"
+            />
 
-              {/* Typing indicator glow */}
-              <div
-                className={cn(
-                  "absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 transition-all duration-300 blur-sm",
-                  inputValue && "opacity-30 animate-pulse",
-                )}
-                data-oid="90ghf8m"
-              />
-
-              <Textarea
-                ref={textareaRefToUse}
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder=""
-                className={cn(
-                  "flex-grow resize-none overflow-y-hidden p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base max-h-[180px] text-foreground relative z-20",
-                  "transition-all duration-300 ease-out",
-                  "focus:scale-[1.01] focus:shadow-inner",
-                  isListening && "animate-pulse",
-                )}
-                rows={1}
-                disabled={isLoading}
-                aria-label="Chat message input"
-                data-oid="cgqw-83"
-              />
-            </div>
             <div
               className="shrink-0 self-end mb-1 flex items-center gap-2"
-              data-oid="hxjp.-2"
+              data-oid="l487w:h"
             >
               {/* Token count indicator (compact for right side) */}
               {inputValue.length > 0 && (
                 <div
-                  className={cn(
-                    "text-xs text-muted-foreground/60 hidden sm:block transition-all duration-300 ease-out",
-                    "animate-in fade-in-0 slide-in-from-right-2",
-                  )}
-                  data-oid="5v1.de1"
+                  className="text-xs text-muted-foreground/60 hidden sm:block"
+                  data-oid="igmm02p"
                 >
                   <TokenCounter
                     text={inputValue}
                     compact={true}
-                    data-oid="3w6xm:3"
+                    data-oid="sqq04ko"
                   />
                 </div>
               )}
-              <div
-                className="animate-in fade-in-0 slide-in-from-right-1 duration-300"
-                data-oid="4qlxfqu"
-              >
-                <RightSideButton data-oid="5ts9z.n" />
-              </div>
+              <RightSideButton data-oid="i52-g-2" />
             </div>
           </div>
 
+          {/* Active Tools Display */}
+          {activeTools.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-border/30">
+              {activeTools.map((tool) => (
+                <div
+                  key={tool}
+                  className="flex items-center gap-1 px-2 py-1 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-lg text-xs font-medium text-primary transition-colors"
+                >
+                  {tool === "web_search" && <Search className="h-3 w-3" />}
+                  {tool === "image_generation" && <ImageIcon className="h-3 w-3" />}
+                  {tool === "deep_research" && <Brain className="h-3 w-3" />}
+                  {tool === "think_longer" && <Lightbulb className="h-3 w-3" />}
+                  {tool === "canvas" && <GalleryVerticalEnd className="h-3 w-3" />}
+                  <span>{getToolDisplayName(tool)}</span>
+                  <button
+                    onClick={() => removeActiveTool(tool)}
+                    className="ml-1 hover:bg-primary/30 rounded p-0.5 transition-colors"
+                    aria-label={`Remove ${getToolDisplayName(tool)}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Action buttons row */}
           <div
-            className="flex items-center justify-between relative z-10 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 delay-100"
-            data-oid="ga3ybg2"
-          >
-            <div
-              className="flex items-center space-x-2 group/actions"
-              data-oid="fb31jsl"
-            >
-              <TooltipProvider data-oid="15t49_c">
-                <Tooltip data-oid="riez5m:">
-                  <TooltipTrigger asChild data-oid="0txuvwa">
+            className="flex items-center justify-between relative z-10"
+            data-oid="x3_1.fv"
+          >            <div className="flex items-center space-x-2" data-oid="jr6o0f9">
+              {/* Attach File Button */}
+              <TooltipProvider data-oid="-dp.q9t">
+                <Tooltip data-oid="o0qk4r5">
+                  <TooltipTrigger asChild data-oid="mayk3my">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className={cn(
-                        "h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-xl disabled:opacity-50 transition-all duration-500 group/btn",
-                        "hover:scale-110 hover:rotate-90 active:scale-95",
-                        "before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-primary/10 before:to-purple-500/10 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100",
-                        "group-hover/actions:translate-y-0 translate-y-1 group-hover/actions:opacity-100 opacity-70",
-                      )}
+                      className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-xl disabled:opacity-50 transition-all duration-300 group/btn"
                       disabled={isLoading}
                       aria-label="Attach"
                       onClick={() => showComingSoonToast("Attach file")}
-                      data-oid="ybc5vuo"
+                      data-oid="iv3ld3p"
                     >
                       <Plus
-                        className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:rotate-180 transition-all duration-500"
-                        data-oid="nn-4vq9"
+                        className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200"
+                        data-oid="w:rc-1s"
                       />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent
                     side="top"
-                    className="bg-card/95 backdrop-blur-sm border-border/50 animate-in fade-in-0 slide-in-from-bottom-2 duration-200"
-                    data-oid="cdbh7d."
+                    className="bg-card/95 backdrop-blur-sm border-border/50"
+                    data-oid="emrngs1"
                   >
-                    <p data-oid="nd4rjpu">Attach file</p>
+                    <p data-oid="6dac8ye">Attach file</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              {[
-                {
-                  icon: ImageIcon,
-                  label: "Image",
-                  tip: "Image Generation",
-                  action: () => showComingSoonToast("Image Generation"),
-                  gradient: "from-blue-400 to-cyan-400",
-                },
-                {
-                  icon: Brain,
-                  label: "Research",
-                  tip: "Deep research",
-                  action: () => showComingSoonToast("Deep Research"),
-                  gradient: "from-purple-400 to-indigo-400",
-                },
-                {
-                  icon: GalleryVerticalEnd,
-                  label: "Canvas",
-                  tip: "Open canvas",
-                  action: () => showComingSoonToast("Canvas"),
-                  gradient: "from-pink-400 to-rose-400",
-                },
-              ].map((item, index) => (
-                <TooltipProvider key={index} data-oid="5nhdz_c">
-                  <Tooltip data-oid="13bpy2:">
-                    <TooltipTrigger asChild data-oid="fuyllwm">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "text-muted-foreground hover:text-white rounded-xl px-3 py-2 h-9 text-sm font-medium disabled:opacity-50 transition-all duration-500 group/btn border border-transparent hover:border-white/30 relative overflow-hidden",
-                          `hover:bg-gradient-to-r hover:${item.gradient} hover:shadow-lg hover:shadow-${item.gradient.split("-")[1]}-500/25`,
-                          "hover:scale-105 hover:-translate-y-0.5 active:scale-95",
-                          "before:absolute before:inset-0 before:bg-gradient-to-r before:opacity-0 before:transition-opacity before:duration-300",
-                          `before:${item.gradient} hover:before:opacity-20`,
-                          "group-hover/actions:translate-y-0 translate-y-1 group-hover/actions:opacity-100 opacity-70",
-                          `animate-in fade-in-0 slide-in-from-bottom-2 duration-300 delay-${(index + 2) * 100}`,
-                        )}
-                        disabled={isLoading}
-                        aria-label={item.label}
-                        onClick={item.action}
-                        data-oid="w2uy4t."
-                      >
-                        <item.icon
-                          className="h-4 w-4 mr-2 group-hover/btn:scale-125 group-hover/btn:rotate-12 transition-all duration-500"
-                          data-oid="1ona9d8"
-                        />
 
-                        <span className="relative z-10" data-oid="-.er-vc">
-                          {item.label}
-                        </span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      className="bg-card/95 backdrop-blur-sm border-border/50 animate-in fade-in-0 slide-in-from-bottom-2 duration-200"
-                      data-oid="st5ip_e"
-                    >
-                      <p data-oid="m0hhjpe">{item.tip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
+              {/* Tools Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-primary hover:bg-primary/15 rounded-xl px-3 py-2 h-9 text-sm font-medium disabled:opacity-50 transition-all duration-300 group/btn border border-transparent hover:border-primary/20"
+                    disabled={isLoading}
+                    aria-label="Tools"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Tools
+                    <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>                <DropdownMenuContent 
+                  align="start" 
+                  className="w-56 bg-card/95 backdrop-blur-sm border border-border/50 shadow-lg rounded-xl p-1"
+                >
+                  <DropdownMenuItem 
+                    onClick={() => showComingSoonToast("Image Generation")}
+                    className="flex items-center py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors"
+                  >
+                    <span className="bg-blue-50 text-blue-600 rounded-full p-1.5 mr-3">
+                      <ImageIcon className="h-4 w-4" />
+                    </span>
+                    Image Generation
+                  </DropdownMenuItem>                  <DropdownMenuItem 
+                    onClick={() => handleToolSelection("web_search")}
+                    className={cn(
+                      "flex items-center py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors",
+                      activeTools.includes("web_search") && "bg-primary/10 border border-primary/20"
+                    )}
+                  >
+                    <span className="bg-green-50 text-green-600 rounded-full p-1.5 mr-3">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <span className="flex-1">Search the web</span>
+                    {activeTools.includes("web_search") && (
+                      <div className="ml-2 h-2 w-2 bg-green-500 rounded-full"></div>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => showComingSoonToast("Deep Research")}
+                    className="flex items-center py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors"
+                  >
+                    <span className="bg-yellow-50 text-yellow-600 rounded-full p-1.5 mr-3">
+                      <Brain className="h-4 w-4" />
+                    </span>
+                    Deep Research
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => showComingSoonToast("Think for longer")}
+                    className="flex items-center py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors"
+                  >
+                    <span className="bg-orange-50 text-orange-600 rounded-full p-1.5 mr-3">
+                      <Lightbulb className="h-4 w-4" />
+                    </span>
+                    Think for longer
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => showComingSoonToast("Canvas")}
+                    className="flex items-center py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors"
+                  >
+                    <span className="text-zinc-600 mr-3">
+                      <GalleryVerticalEnd className="h-4 w-4" />
+                    </span>
+                    Canvas
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Status indicators */}
             <div
               className="flex items-center space-x-2 text-xs text-muted-foreground/60"
-              data-oid="aw2vjeh"
+              data-oid="n3a-x3b"
             >
               {isListening && (
                 <div
-                  className="flex items-center space-x-2 animate-in fade-in-0 slide-in-from-right-2 duration-300"
-                  data-oid="09fjwkp"
+                  className="flex items-center space-x-1 animate-pulse"
+                  data-oid="y4hdggp"
                 >
                   <div
-                    className="flex items-center space-x-1"
-                    data-oid="4ha4ao0"
-                  >
-                    <div
-                      className="h-2 w-2 bg-red-400 rounded-full animate-ping"
-                      data-oid="mgzmdc-"
-                    />
+                    className="h-2 w-2 bg-red-400 rounded-full animate-ping"
+                    data-oid="i9n8ssy"
+                  />
 
-                    <div
-                      className="h-1.5 w-1.5 bg-red-500 rounded-full animate-pulse delay-75"
-                      data-oid="ldk00h_"
-                    />
-
-                    <div
-                      className="h-1 w-1 bg-red-600 rounded-full animate-pulse delay-150"
-                      data-oid="n0dssh:"
-                    />
-                  </div>
-                  <span
-                    className="animate-pulse font-medium text-red-400"
-                    data-oid="f9-n64b"
-                  >
-                    Listening...
-                  </span>
+                  <span data-oid="0mt:z93">Listening...</span>
                 </div>
               )}
               {isLoading && (
-                <div
-                  className="flex items-center space-x-2 animate-in fade-in-0 slide-in-from-right-2 duration-300"
-                  data-oid="m_hz6ko"
-                >
+                <div className="flex items-center space-x-1" data-oid="d6y40h-">
                   <div
-                    className="flex items-center space-x-1"
-                    data-oid="ot0yvsu"
-                  >
-                    <div
-                      className="h-2 w-2 bg-primary rounded-full animate-bounce"
-                      data-oid="_6:s515"
-                    />
+                    className="h-2 w-2 bg-primary rounded-full animate-bounce"
+                    data-oid=":y:vf1y"
+                  />
 
-                    <div
-                      className="h-1.5 w-1.5 bg-primary/80 rounded-full animate-bounce delay-75"
-                      data-oid="-vsn7ql"
-                    />
-
-                    <div
-                      className="h-1 w-1 bg-primary/60 rounded-full animate-bounce delay-150"
-                      data-oid="po7_j61"
-                    />
-                  </div>
-                  <span
-                    className="animate-pulse font-medium text-primary"
-                    data-oid="m5q4kpy"
-                  >
-                    Processing...
-                  </span>
+                  <span data-oid="m_00q-b">Processing...</span>
                 </div>
               )}
             </div>

@@ -116,31 +116,31 @@ export default function PricingPage() {
   return (
     <main
       className="flex flex-col min-h-screen overflow-y-auto bg-gradient-to-br from-background via-background to-muted/20"
-      data-oid="f74x.st"
+      data-oid="n9wg67z"
     >
       {/* Header */}
       <div
         className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b"
-        data-oid=".dyn16f"
+        data-oid="lqu03pb"
       >
         <div
           className="flex items-center justify-between p-4 md:p-6 max-w-6xl mx-auto"
-          data-oid="c-k5t6r"
+          data-oid="euc7ihh"
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.back()}
             className="hover:bg-accent/50"
-            data-oid="ni14hcd"
+            data-oid=".c7mjur"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" data-oid="dlx3:zg" />
+            <ArrowLeft className="h-4 w-4 mr-2" data-oid="0_nhi-5" />
             Back
           </Button>
-          <h1 className="text-xl font-semibold" data-oid="in:zhpn">
+          <h1 className="text-xl font-semibold" data-oid="fhg9--d">
             Pricing
           </h1>
-          <div className="w-16" data-oid=".29unsg"></div>{" "}
+          <div className="w-16" data-oid="149m7d."></div>{" "}
           {/* Spacer for centering */}
         </div>
       </div>
@@ -148,37 +148,37 @@ export default function PricingPage() {
       {/* Content */}
       <div
         className="flex-1 p-4 md:p-6 max-w-6xl mx-auto w-full"
-        data-oid="vqs223w"
+        data-oid="f3uqn7a"
       >
         <div
           className="space-y-12 animate-in fade-in-50 duration-500"
-          data-oid="g1kej9x"
+          data-oid="s_6pg3b"
         >
           {/* Hero Section */}
-          <header className="text-center space-y-6" data-oid="2l11r3-">
-            <div className="relative" data-oid="n.m0x2l">
+          <header className="text-center space-y-6" data-oid="mco8wge">
+            <div className="relative" data-oid="jnld6re">
               <h1
                 className="text-4xl sm:text-6xl font-bold tracking-tight bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent py-2"
-                data-oid="fi0iu06"
+                data-oid="imegfbs"
               >
                 PyscoutAI
               </h1>
               <Badge
                 className="absolute -top-2 -right-8 bg-green-500 hover:bg-green-600 text-white animate-pulse"
-                data-oid="gdem.zl"
+                data-oid="4mnklgf"
               >
                 FREE
               </Badge>
             </div>
             <h2
               className="text-xl sm:text-2xl font-semibold text-foreground"
-              data-oid="it3y1-a"
+              data-oid="r66c7mv"
             >
               Unrestricted Access, Completely Free!
             </h2>
             <p
               className="text-muted-foreground max-w-3xl mx-auto text-lg"
-              data-oid="7mt:5-h"
+              data-oid="na-28bi"
             >
               Experience the full power of PyscoutAI with all features unlocked,
               at no cost. Ever.
@@ -186,62 +186,63 @@ export default function PricingPage() {
           </header>
 
           {/* Main Pricing Card */}
-          <div className="flex justify-center" data-oid="yp4b-:5">
+          <div className="flex justify-center" data-oid="nmld-vq">
             <Card
               className="w-full max-w-2xl glassmorphism shadow-2xl border-primary/20 hover:shadow-primary/10 transition-all duration-300 relative overflow-hidden"
-              data-oid="hzx1lam"
+              data-oid="-llg49g"
             >
               {/* Animated background */}
               <div
                 className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-pink-500/5 animate-shimmer"
-                data-oid="x_ihsrt"
+                data-oid="j6os5sn"
               ></div>
 
               <CardHeader
                 className="text-center pb-6 relative"
-                data-oid="caahr6b"
+                data-oid="eirijai"
               >
                 <div
                   className="flex items-center justify-center space-x-2 mb-4"
-                  data-oid="fpavc3_"
+                  data-oid="vy6axee"
                 >
                   <InfinityIcon
                     className="h-8 w-8 text-primary animate-float"
-                    data-oid="3e0edoj"
+                    data-oid="40c7_b:"
                   />
+
                   <Badge
                     className="bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                    data-oid="aw.72gk"
+                    data-oid="vhyp08w"
                   >
                     Forever Free
                   </Badge>
                 </div>
                 <CardTitle
                   className="text-3xl font-bold text-foreground"
-                  data-oid="050icjv"
+                  data-oid="o0pdfz."
                 >
                   PyscoutAI
                 </CardTitle>
                 <div
                   className="flex items-center justify-center space-x-2 mt-4"
-                  data-oid="gcdi9yt"
+                  data-oid="a7okpel"
                 >
                   <span
                     className="text-4xl font-bold text-primary"
-                    data-oid="-1foif8"
+                    data-oid="o2-v:su"
                   >
                     $0
                   </span>
-                  <div className="text-left" data-oid="wjqcuo.">
+                  <div className="text-left" data-oid="oxci4:n">
                     <div
                       className="text-sm text-muted-foreground"
-                      data-oid="39ebkky"
+                      data-oid="u1hwilh"
                     >
                       / month
                     </div>
                     <div
                       className="text-xs text-muted-foreground"
-                      data-oid="csmi_ig"
+                      data-oid="cl4d4:7"
                     >
                       Forever
                     </div>
@@ -249,37 +250,37 @@ export default function PricingPage() {
                 </div>
                 <p
                   className="text-sm text-muted-foreground mt-2"
-                  data-oid="5l_hxl3"
+                  data-oid="dlj8xld"
                 >
                   No catches, no hidden fees, no credit card required
                 </p>
               </CardHeader>
 
-              <CardContent className="space-y-6 relative" data-oid="vw7ij6p">
+              <CardContent className="space-y-6 relative" data-oid="pjkjd-8">
                 {/* Main Features */}
-                <div className="space-y-4" data-oid="mewr:t1">
+                <div className="space-y-4" data-oid="x82hycc">
                   {mainFeatures.map((feature, index) => (
                     <div
                       key={index}
                       className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/20 transition-colors"
-                      data-oid="3.jc9ng"
+                      data-oid="2pay-if"
                     >
-                      <div className="flex-shrink-0 mt-0.5" data-oid="uj7b20x">
+                      <div className="flex-shrink-0 mt-0.5" data-oid="rtp4d0h">
                         <feature.icon
                           className="h-5 w-5 text-green-500"
-                          data-oid=".-4icnb"
+                          data-oid="oe0g3bs"
                         />
                       </div>
-                      <div className="flex-1" data-oid="or-t0r_">
+                      <div className="flex-1" data-oid="x8:upj6">
                         <p
                           className="font-medium text-foreground"
-                          data-oid="gh7z-ft"
+                          data-oid="ze4qg09"
                         >
                           {feature.name}
                         </p>
                         <p
                           className="text-sm text-muted-foreground"
-                          data-oid="6ao187i"
+                          data-oid="5ghb08z"
                         >
                           {feature.description}
                         </p>
@@ -288,22 +289,22 @@ export default function PricingPage() {
                   ))}
                 </div>
 
-                <Separator data-oid="4k1:cjj" />
+                <Separator data-oid=":ehff7n" />
 
                 {/* CTA Button */}
                 <Button
                   className="w-full h-14 bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 text-primary-foreground text-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                   onClick={() => router.push("/")}
                   size="lg"
-                  data-oid="to718yr"
+                  data-oid="9_pze1:"
                 >
-                  <Rocket className="h-5 w-5 mr-2" data-oid="tvh9j_1" />
+                  <Rocket className="h-5 w-5 mr-2" data-oid="_aca:r4" />
                   Start Chatting for Free
                 </Button>
 
                 <p
                   className="text-center text-xs text-muted-foreground"
-                  data-oid="8gty3iv"
+                  data-oid="c04ior9"
                 >
                   Join thousands of users already using PyscoutAI
                 </p>
@@ -312,45 +313,46 @@ export default function PricingPage() {
           </div>
 
           {/* Additional Features Grid */}
-          <div className="space-y-6" data-oid=".l8-nbl">
+          <div className="space-y-6" data-oid="nv-obq9">
             <h3
               className="text-2xl font-bold text-center text-foreground"
-              data-oid="tdma.0t"
+              data-oid="rsja503"
             >
               Everything You Need, Included
             </h3>
             <div
               className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
-              data-oid="02h97f_"
+              data-oid="uaitllm"
             >
               {additionalFeatures.map((featureGroup, index) => (
                 <Card
                   key={index}
                   className="glassmorphism hover:shadow-lg transition-all duration-300 border-border/50"
-                  data-oid="wp56io4"
+                  data-oid="pt9gc:g"
                 >
-                  <CardHeader className="pb-3" data-oid=":r-v3q3">
+                  <CardHeader className="pb-3" data-oid="hy8081r">
                     <CardTitle
                       className="text-lg font-semibold text-foreground"
-                      data-oid="78h-bv4"
+                      data-oid="_zt29sv"
                     >
                       {featureGroup.category}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2" data-oid="691.7x5">
+                  <CardContent className="space-y-2" data-oid=".o2dn-6">
                     {featureGroup.items.map((item, itemIndex) => (
                       <div
                         key={itemIndex}
                         className="flex items-center space-x-2"
-                        data-oid="xu0june"
+                        data-oid="pcnp5bq"
                       >
                         <CheckCircle
                           className="h-4 w-4 text-green-500 flex-shrink-0"
-                          data-oid="9vofp_v"
+                          data-oid="jz.k6yy"
                         />
+
                         <span
                           className="text-sm text-muted-foreground"
-                          data-oid="_3ft-30"
+                          data-oid="cq8j3t-"
                         >
                           {item}
                         </span>
@@ -363,49 +365,49 @@ export default function PricingPage() {
           </div>
 
           {/* Testimonials */}
-          <div className="space-y-6" data-oid="ohlvqd7">
+          <div className="space-y-6" data-oid="n9o6cit">
             <h3
               className="text-2xl font-bold text-center text-foreground"
-              data-oid="3ye.b5w"
+              data-oid="43og.uc"
             >
               What Users Are Saying
             </h3>
-            <div className="grid gap-6 md:grid-cols-3" data-oid="7jppm9q">
+            <div className="grid gap-6 md:grid-cols-3" data-oid="kyixjwd">
               {testimonials.map((testimonial, index) => (
                 <Card
                   key={index}
                   className="glassmorphism hover:shadow-lg transition-all duration-300 border-border/50"
-                  data-oid="4.w3nbl"
+                  data-oid="67s-q46"
                 >
-                  <CardContent className="p-6" data-oid="00nyn6r">
+                  <CardContent className="p-6" data-oid=".e44pe5">
                     <div
                       className="flex items-center space-x-1 mb-4"
-                      data-oid="d0r9._j"
+                      data-oid="xwrsf1t"
                     >
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star
                           key={i}
                           className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                          data-oid="lg36ogo"
+                          data-oid="1lx0r9r"
                         />
                       ))}
                     </div>
                     <p
                       className="text-sm text-muted-foreground mb-4 italic"
-                      data-oid="cwofj:9"
+                      data-oid="h48_ena"
                     >
                       "{testimonial.text}"
                     </p>
-                    <div data-oid="actj9ny">
+                    <div data-oid="bpzu-qw">
                       <p
                         className="font-semibold text-foreground"
-                        data-oid="o8f83ev"
+                        data-oid="qtsg6:2"
                       >
                         {testimonial.name}
                       </p>
                       <p
                         className="text-xs text-muted-foreground"
-                        data-oid="usfm1n2"
+                        data-oid="-j23kqm"
                       >
                         {testimonial.role}
                       </p>
@@ -419,101 +421,105 @@ export default function PricingPage() {
           {/* Stats */}
           <Card
             className="glassmorphism shadow-xl border-border/50"
-            data-oid="-7eqfmp"
+            data-oid="m84_ctf"
           >
-            <CardContent className="p-8" data-oid="o:jpp5_">
+            <CardContent className="p-8" data-oid="xiovql2">
               <div
                 className="grid gap-8 md:grid-cols-4 text-center"
-                data-oid="d_uftn9"
+                data-oid="9afml:i"
               >
-                <div data-oid="mpg:64.">
+                <div data-oid="_00nf60">
                   <div
                     className="flex items-center justify-center mb-2"
-                    data-oid="tvywa-x"
+                    data-oid="0km3_-x"
                   >
                     <Users
                       className="h-6 w-6 text-primary mr-2"
-                      data-oid="u8t0p.r"
+                      data-oid="4-lexei"
                     />
+
                     <span
                       className="text-2xl font-bold text-foreground"
-                      data-oid="7gj39lu"
+                      data-oid="bw68ja2"
                     >
                       10K+
                     </span>
                   </div>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid="-dsxwnh"
+                    data-oid="kkrk476"
                   >
                     Active Users
                   </p>
                 </div>
-                <div data-oid="c35gmb3">
+                <div data-oid="e1z8imz">
                   <div
                     className="flex items-center justify-center mb-2"
-                    data-oid="zh5r-3c"
+                    data-oid="w84:a22"
                   >
                     <Cpu
                       className="h-6 w-6 text-primary mr-2"
-                      data-oid="vz__n9p"
+                      data-oid="od.8gwf"
                     />
+
                     <span
                       className="text-2xl font-bold text-foreground"
-                      data-oid="r:f:vp2"
+                      data-oid="su_1n21"
                     >
                       450+
                     </span>
                   </div>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid=":saaarq"
+                    data-oid="ggup9qy"
                   >
                     AI Models
                   </p>
                 </div>
-                <div data-oid="htosyky">
+                <div data-oid="g.05h88">
                   <div
                     className="flex items-center justify-center mb-2"
-                    data-oid="7cv.oue"
+                    data-oid="nc.y86p"
                   >
                     <Globe
                       className="h-6 w-6 text-primary mr-2"
-                      data-oid="nsxomdi"
+                      data-oid="1k2z9mw"
                     />
+
                     <span
                       className="text-2xl font-bold text-foreground"
-                      data-oid="sri1rfu"
+                      data-oid="hd2jh-5"
                     >
                       99.9%
                     </span>
                   </div>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid="b:qplwd"
+                    data-oid="cqr:x3z"
                   >
                     Uptime
                   </p>
                 </div>
-                <div data-oid="6ua7c7u">
+                <div data-oid="hos2odn">
                   <div
                     className="flex items-center justify-center mb-2"
-                    data-oid="loazciq"
+                    data-oid="8l4pj:v"
                   >
                     <InfinityIcon
                       className="h-6 w-6 text-primary mr-2"
-                      data-oid="ajqsyda"
+                      data-oid="qstxj91"
                     />
+
                     <span
                       className="text-2xl font-bold text-foreground"
-                      data-oid="em5fgfc"
+                      data-oid="ex-8.ea"
                     >
                       ∞
                     </span>
                   </div>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid="7z:jnn-"
+                    data-oid="rx7wzt8"
                   >
                     Always Free
                   </p>
@@ -525,73 +531,73 @@ export default function PricingPage() {
           {/* FAQ */}
           <Card
             className="glassmorphism shadow-xl border-border/50"
-            data-oid="cb23izl"
+            data-oid="tbam03p"
           >
-            <CardHeader data-oid="hk45-jo">
+            <CardHeader data-oid="n0___.r">
               <CardTitle
                 className="text-xl font-bold text-foreground text-center"
-                data-oid="eqvx2e4"
+                data-oid="fx_m8bk"
               >
                 Frequently Asked Questions
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4" data-oid="c_lqyaq">
-              <div className="grid gap-4 md:grid-cols-2" data-oid="x5ujpkr">
-                <div className="space-y-2" data-oid="k_ku4y1">
+            <CardContent className="space-y-4" data-oid="zstj:nm">
+              <div className="grid gap-4 md:grid-cols-2" data-oid="jw37dk4">
+                <div className="space-y-2" data-oid="4p8jzm7">
                   <h4
                     className="font-semibold text-foreground"
-                    data-oid="r19p55o"
+                    data-oid="jx1xhm0"
                   >
                     Is PyscoutAI really free?
                   </h4>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid="oxeyc_n"
+                    data-oid="6w6jlf9"
                   >
                     Yes! PyscoutAI is completely free with no hidden costs, no
                     premium tiers, and no credit card required.
                   </p>
                 </div>
-                <div className="space-y-2" data-oid="jk723g5">
+                <div className="space-y-2" data-oid="m588_p9">
                   <h4
                     className="font-semibold text-foreground"
-                    data-oid="d9g8pz8"
+                    data-oid="fcsx.68"
                   >
                     How many models can I use?
                   </h4>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid=".ps9z0b"
+                    data-oid="f9p97yh"
                   >
                     You have unlimited access to all 450+ AI models including
                     GPT-4, Claude, Gemini, and many others.
                   </p>
                 </div>
-                <div className="space-y-2" data-oid="20j2c:5">
+                <div className="space-y-2" data-oid="ae6skee">
                   <h4
                     className="font-semibold text-foreground"
-                    data-oid="wab1en3"
+                    data-oid="e4tk.yf"
                   >
                     Are there usage limits?
                   </h4>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid="z.g3vkw"
+                    data-oid=".e20pjb"
                   >
                     No usage limits! Chat as much as you want, when you want,
                     with any available model.
                   </p>
                 </div>
-                <div className="space-y-2" data-oid="09psip6">
+                <div className="space-y-2" data-oid="qsq1gpp">
                   <h4
                     className="font-semibold text-foreground"
-                    data-oid="jgleovm"
+                    data-oid=".:pp9vl"
                   >
                     How is this sustainable?
                   </h4>
                   <p
                     className="text-sm text-muted-foreground"
-                    data-oid="9qhkno2"
+                    data-oid="h25_vi5"
                   >
                     We believe AI should be accessible to everyone. Our mission
                     is to democratize AI technology.
@@ -606,9 +612,9 @@ export default function PricingPage() {
       {/* Footer */}
       <footer
         className="text-center p-6 text-xs text-muted-foreground border-t bg-background/50"
-        data-oid="6-t3b5w"
+        data-oid="y27.io9"
       >
-        <p data-oid="zmfxy9x">PyscoutAI - The Future of AI, Open to Everyone</p>
+        <p data-oid="zyhx:n4">PyscoutAI - The Future of AI, Open to Everyone</p>
       </footer>
     </main>
   );

@@ -32,24 +32,24 @@ export function AppSidebar() {
       collapsible="icon"
       variant="sidebar"
       side="left"
-      data-oid="sr0n6ak"
+      data-oid="5vs35d-"
     >
       <SidebarHeader
         className="p-3 flex flex-col items-start space-y-3"
-        data-oid="k5n469e"
+        data-oid="kq0c4fo"
       >
         <div
           className="flex w-full items-center justify-between"
-          data-oid="vs86goq"
+          data-oid="7tgf2hb"
         >
-          <SidebarTrigger asChild data-oid="l4h5:ov">
+          <SidebarTrigger asChild data-oid="641w1yk">
             <Button
               variant="ghost"
               size="icon"
               className="h-9 w-9 self-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200"
-              data-oid="_wu41sp"
+              data-oid="-ytz3ed"
             >
-              <Menu className="h-5 w-5" data-oid="7ogd.z5" />
+              <Menu className="h-5 w-5" data-oid="1f8z-9i" />
             </Button>
           </SidebarTrigger>
         </div>
@@ -59,34 +59,35 @@ export function AppSidebar() {
             "flex items-center gap-2 pt-1 group-data-[collapsible=icon]:hidden",
             "animate-in fade-in duration-300 ease-out",
           )}
-          data-oid="v3e4y53"
+          data-oid="w0osl4e"
         >
-          <Bot className="h-7 w-7 text-primary" data-oid="a--6b9l" />
+          <Bot className="h-7 w-7 text-primary" data-oid="3vvdxvb" />
           <h1
             className="text-2xl font-semibold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent"
-            data-oid="9tlqpk7"
+            data-oid="ourne50"
           >
             PyscoutAI
           </h1>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-2" data-oid="vci8aa9">
-        <SidebarMenu data-oid="hql0:d2">
-          <SidebarMenuItem data-oid="k-f9my0">
+      <SidebarContent className="p-2" data-oid="da98x.y">
+        <SidebarMenu data-oid="c0ba.ji">
+          <SidebarMenuItem data-oid="y2u99pl">
             <SidebarMenuButton
               onClick={handleNewChat}
               tooltip={{ children: "New Chat", side: "right", align: "center" }}
               className="group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 transition-colors duration-150 hover:bg-sidebar-primary hover:text-sidebar-primary-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
-              data-oid="y:_ylv6"
+              data-oid="um56-69"
             >
               <SquarePen
                 className="text-primary group-hover:text-sidebar-primary-foreground"
-                data-oid="g81-3xy"
+                data-oid="o3fxzwy"
               />
+
               <span
                 className="group-data-[collapsible=icon]:hidden"
-                data-oid="v0zscvu"
+                data-oid="z1qj3vo"
               >
                 New Chat
               </span>
@@ -95,19 +96,19 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 mt-auto" data-oid="tegw3-1">
-        <SidebarMenu data-oid="_ykenjw">
-          <SidebarMenuItem data-oid="8hf2d67">
+      <SidebarFooter className="p-3 mt-auto" data-oid="j6w7man">
+        <SidebarMenu data-oid="ootj6c0">
+          <SidebarMenuItem data-oid="xqwd:2d">
             <SidebarMenuButton
               onClick={navigateToSettings}
               tooltip={{ children: "Settings", side: "right", align: "center" }}
               className="group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              data-oid="et35zj7"
+              data-oid="gs1nofr"
             >
-              <Settings className="h-5 w-5" data-oid="p5s7lc6" />
+              <Settings className="h-5 w-5" data-oid=":_igqgm" />
               <span
                 className="group-data-[collapsible=icon]:hidden"
-                data-oid="_0zd6oh"
+                data-oid="3ms6_6a"
               >
                 Settings
               </span>

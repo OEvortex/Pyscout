@@ -41,47 +41,36 @@ export function TokenCounter({
 
   if (compact) {
     return (
-      <TooltipProvider data-oid="nszpcib">
-        <Tooltip data-oid="syoguii">
-          <TooltipTrigger asChild data-oid="jy0kjaz">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <div
               className={cn(
                 "flex items-center gap-1 text-xs transition-colors duration-200",
                 colorClass,
                 className,
               )}
-              data-oid="x_-gklk"
             >
-              <Hash className="h-3 w-3" data-oid="epot1:1" />
-              <span className="font-medium" data-oid="fusxkvo">
+              <Hash className="h-3 w-3" />
+              <span className="font-medium">
                 {formatTokenCount(tokenInfo.tokens)}
               </span>
             </div>
           </TooltipTrigger>
-          <TooltipContent
-            className="bg-card/95 backdrop-blur-sm border-border/50"
-            data-oid="7f2vnw_"
-          >
-            <div className="space-y-1" data-oid="_ihs803">
-              <p className="font-medium" data-oid="ifdkt62">
-                {description}
-              </p>
-              <div className="text-xs space-y-0.5" data-oid=":lujp9:">
-                <p data-oid="ursqnq:">
+          <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50">
+            <div className="space-y-1">
+              <p className="font-medium">{description}</p>
+              <div className="text-xs space-y-0.5">
+                <p>
                   Tokens:{" "}
-                  <span className="font-medium" data-oid="yjy_zeq">
-                    {tokenInfo.tokens}
-                  </span>
+                  <span className="font-medium">{tokenInfo.tokens}</span>
                 </p>
-                <p data-oid="-uoq508">
-                  Words:{" "}
-                  <span className="font-medium" data-oid="f6ieof:">
-                    {tokenInfo.words}
-                  </span>
+                <p>
+                  Words: <span className="font-medium">{tokenInfo.words}</span>
                 </p>
-                <p data-oid="c49ki3u">
+                <p>
                   Characters:{" "}
-                  <span className="font-medium" data-oid="_f2skvh">
+                  <span className="font-medium">
                     {tokenInfo.charactersWithSpaces}
                   </span>
                 </p>
@@ -94,10 +83,7 @@ export function TokenCounter({
   }
 
   return (
-    <div
-      className={cn("flex items-center gap-2", className)}
-      data-oid="5davgc3"
-    >
+    <div className={cn("flex items-center gap-2", className)}>
       <Badge
         variant="outline"
         className={cn(
@@ -105,39 +91,29 @@ export function TokenCounter({
           tokenInfo.tokens > 0 ? colorClass : "text-muted-foreground",
           tokenInfo.tokens > 2000 && "animate-pulse",
         )}
-        data-oid="ur8.odh"
       >
-        <Hash className="h-3 w-3 mr-1" data-oid="7d79uxw" />
+        <Hash className="h-3 w-3 mr-1" />
         {formatTokenCount(tokenInfo.tokens)} tokens
       </Badge>
 
       {showDetails && tokenInfo.tokens > 0 && (
-        <div
-          className="flex items-center gap-2 text-xs text-muted-foreground"
-          data-oid="_vi4t.z"
-        >
-          <span data-oid=".wfojpv">{tokenInfo.words} words</span>
-          <span data-oid="w4g8kq9">•</span>
-          <span data-oid="7d4fnkp">{tokenInfo.charactersWithSpaces} chars</span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{tokenInfo.words} words</span>
+          <span>•</span>
+          <span>{tokenInfo.charactersWithSpaces} chars</span>
         </div>
       )}
 
       {tokenInfo.tokens > 3000 && (
-        <TooltipProvider data-oid="li8egr-">
-          <Tooltip data-oid="p4mguh8">
-            <TooltipTrigger asChild data-oid="s-tfl--">
-              <div
-                className="flex items-center text-amber-500"
-                data-oid="06q6h::"
-              >
-                <Zap className="h-3 w-3" data-oid="d:znimm" />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center text-amber-500">
+                <Zap className="h-3 w-3" />
               </div>
             </TooltipTrigger>
-            <TooltipContent
-              className="bg-card/95 backdrop-blur-sm border-border/50"
-              data-oid="yfqc3vp"
-            >
-              <p className="text-xs" data-oid="x:h:r56">
+            <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50">
+              <p className="text-xs">
                 Very long message - may hit token limits
               </p>
             </TooltipContent>

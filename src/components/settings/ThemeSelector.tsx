@@ -19,28 +19,30 @@ export function ThemeSelector() {
   if (!mounted) {
     // Render placeholder to avoid hydration mismatch
     return (
-      <div className="grid gap-3 md:grid-cols-3" data-oid="tytrmd4">
+      <div className="grid gap-3 md:grid-cols-3" data-oid="h:r1d.w">
         {[1, 2, 3].map((i) => (
           <Card
             key={i}
             className="cursor-pointer border-2 opacity-50"
-            data-oid="6ugk7e4"
+            data-oid="9x0kfxb"
           >
             <CardContent
               className="p-4 text-center space-y-2"
-              data-oid="4:q.e8o"
+              data-oid="mwffzcc"
             >
               <div
                 className="h-8 w-8 mx-auto bg-muted rounded-full animate-pulse"
-                data-oid=":vzjflt"
+                data-oid="n:pgo0_"
               />
+
               <div
                 className="h-4 bg-muted rounded animate-pulse"
-                data-oid="uvf4s3l"
+                data-oid="w50.imy"
               />
+
               <div
                 className="h-3 bg-muted rounded animate-pulse"
-                data-oid="thhhy7."
+                data-oid="93iwrci"
               />
             </CardContent>
           </Card>
@@ -74,12 +76,12 @@ export function ThemeSelector() {
   ];
 
   return (
-    <div className="space-y-4" data-oid="jj24pd-">
-      <div className="text-sm text-muted-foreground" data-oid="y6qvu4g">
+    <div className="space-y-4" data-oid="shnffij">
+      <div className="text-sm text-muted-foreground" data-oid="1prn0xs">
         Choose how PyscoutAI appears on your device
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3" data-oid="g9a2i.t">
+      <div className="grid gap-3 md:grid-cols-3" data-oid="cecej.f">
         {themes.map((t) => (
           <Card
             key={t.value}
@@ -90,11 +92,11 @@ export function ThemeSelector() {
                 : "border-border hover:border-primary/50",
             )}
             onClick={() => setTheme(t.value)}
-            data-oid="5oxlc2r"
+            data-oid="0ocxlhg"
           >
             <CardContent
               className="p-4 text-center space-y-3"
-              data-oid="8exk6tt"
+              data-oid="zvauegx"
             >
               {/* Preview */}
               <div
@@ -102,25 +104,25 @@ export function ThemeSelector() {
                   "h-12 w-full rounded-md border relative overflow-hidden",
                   t.preview,
                 )}
-                data-oid="z.395za"
+                data-oid="hh95:q-"
               >
                 {theme === t.value && (
                   <div
                     className="absolute inset-0 flex items-center justify-center"
-                    data-oid="ugrmddn"
+                    data-oid="8a9xpsj"
                   >
                     <div
                       className="bg-primary text-primary-foreground rounded-full p-1"
-                      data-oid="j6y-2sw"
+                      data-oid="ijiabx-"
                     >
-                      <Check className="h-3 w-3" data-oid="qe6o.f2" />
+                      <Check className="h-3 w-3" data-oid="myxe63b" />
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Icon and Label */}
-              <div className="space-y-1" data-oid="pp0h2k1">
+              <div className="space-y-1" data-oid="8er.v5u">
                 <t.icon
                   className={cn(
                     "h-5 w-5 mx-auto transition-colors",
@@ -128,18 +130,19 @@ export function ThemeSelector() {
                       ? "text-primary"
                       : "text-muted-foreground",
                   )}
-                  data-oid="fmtsam8"
+                  data-oid="h0.nas8"
                 />
+
                 <h3
                   className={cn(
                     "font-medium text-sm transition-colors",
                     theme === t.value ? "text-primary" : "text-foreground",
                   )}
-                  data-oid="_xzevh9"
+                  data-oid="bcrh6r9"
                 >
                   {t.name}
                 </h3>
-                <p className="text-xs text-muted-foreground" data-oid="g.xp4hf">
+                <p className="text-xs text-muted-foreground" data-oid="vcxrryf">
                   {t.description}
                 </p>
               </div>
@@ -149,8 +152,8 @@ export function ThemeSelector() {
       </div>
 
       {/* Alternative Button Style */}
-      <div className="pt-2 border-t" data-oid="bk7in6b">
-        <div className="flex flex-wrap gap-2" data-oid="3zr-_xr">
+      <div className="pt-2 border-t" data-oid="1cq9vx_">
+        <div className="flex flex-wrap gap-2" data-oid="z4bvx6a">
           {themes.map((t) => (
             <Button
               key={t.value}
@@ -162,12 +165,12 @@ export function ThemeSelector() {
                   theme === t.value,
               })}
               aria-pressed={theme === t.value}
-              data-oid="yhl.ad6"
+              data-oid=".:7e5.9"
             >
-              <t.icon className="mr-2 h-4 w-4" data-oid="6d2zs_x" />
+              <t.icon className="mr-2 h-4 w-4" data-oid="2sid_.k" />
               {t.name}
               {theme === t.value && (
-                <Check className="ml-auto h-3 w-3" data-oid="r14v.7x" />
+                <Check className="ml-auto h-3 w-3" data-oid="46a9r2r" />
               )}
             </Button>
           ))}

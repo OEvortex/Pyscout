@@ -58,28 +58,26 @@ function parseModelName(id: string): string {
 function getModelIcon(modelName: string): React.ReactNode {
   const name = modelName.toLowerCase();
   if (name.includes("gpt") || name.includes("openai")) {
-    return <Sparkles className="h-3 w-3" data-oid="wavb5ya" />;
+    return <Sparkles className="h-3 w-3" data-oid="ilp0stx" />;
   }
   if (name.includes("claude") || name.includes("anthropic")) {
-    return <Crown className="h-3 w-3" data-oid="ibhkgug" />;
+    return <Crown className="h-3 w-3" data-oid="ro0u63t" />;
   }
   if (name.includes("gemini") || name.includes("google")) {
-    return <Star className="h-3 w-3" data-oid="r5ix53t" />;
+    return <Star className="h-3 w-3" data-oid="i.xf1mv" />;
   }
   if (name.includes("flash") || name.includes("turbo")) {
-    return <Zap className="h-3 w-3" data-oid="uw:3o2p" />;
+    return <Zap className="h-3 w-3" data-oid="net5eak" />;
   }
   return (
     <div
       className="h-3 w-3 bg-gradient-to-br from-primary to-purple-500 rounded-full"
-      data-oid="w-40nc_"
+      data-oid="9cu1zx:"
     />
   );
 }
 
-function getModelBadge(
-  modelName: string,
-): {
+function getModelBadge(modelName: string): {
   text: string;
   variant: "default" | "secondary" | "destructive" | "outline";
 } | null {
@@ -289,23 +287,24 @@ export function ModelSelector({
         disabled={true}
         aria-label="Select Model"
         suppressHydrationWarning
-        data-oid="dfy5:nf"
+        data-oid="ued7out"
       >
-        <div className="flex items-center min-w-0 flex-1" data-oid="xlj108p">
+        <div className="flex items-center min-w-0 flex-1" data-oid="0rng10w">
           <div
             className="h-2 w-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mr-3 flex-shrink-0"
-            data-oid="7a9t:fw"
+            data-oid="0ll1gjn"
           />
+
           <span
             className="text-sm font-semibold text-foreground truncate"
-            data-oid="ap88-8i"
+            data-oid="6k_pnq0"
           >
             Select Model
           </span>
         </div>
         <ChevronDown
           className="ml-2 h-4 w-4 shrink-0 text-muted-foreground flex-shrink-0"
-          data-oid="stcy:wh"
+          data-oid="nvix:c0"
         />
       </Button>
     );
@@ -317,15 +316,17 @@ export function ModelSelector({
       <>
         <div
           className="h-2 w-2 bg-primary/60 rounded-full mr-3"
-          data-oid="ltjyay5"
+          data-oid=":ql.5-6"
         />
+
         <Loader2
           className="mr-2 h-4 w-4 animate-spin text-primary"
-          data-oid="g8hrxq5"
+          data-oid="v:yl4qe"
         />
+
         <span
           className="text-sm font-medium text-muted-foreground"
-          data-oid="0v1j6ob"
+          data-oid="sff_y70"
         >
           Loading models...
         </span>
@@ -338,21 +339,23 @@ export function ModelSelector({
       <>
         <div
           className="h-2 w-2 bg-red-400 rounded-full mr-3 animate-pulse"
-          data-oid="fstyk93"
+          data-oid="__jhu:."
         />
+
         <ServerCrash
           className="mr-2 h-4 w-4 text-destructive"
-          data-oid="9whm:ro"
+          data-oid="q-q9thv"
         />
+
         <span
           className="text-sm font-medium text-destructive"
-          data-oid="9eu.:me"
+          data-oid="qkxtei6"
         >
           Connection Error
         </span>
         <ChevronDown
           className="ml-auto h-4 w-4 text-muted-foreground/50"
-          data-oid="5ncvfrm"
+          data-oid="7qkh_1j"
         />
       </>
     );
@@ -363,17 +366,18 @@ export function ModelSelector({
       <>
         <div
           className="h-2 w-2 bg-muted-foreground/60 rounded-full mr-3"
-          data-oid="wo4z-nt"
+          data-oid="4a4mzad"
         />
+
         <span
           className="text-sm font-medium text-muted-foreground"
-          data-oid=".6e7kw4"
+          data-oid="j24jdwh"
         >
           No Models Available
         </span>
         <ChevronDown
           className="ml-auto h-4 w-4 text-muted-foreground/50"
-          data-oid="zidtdiw"
+          data-oid="lkz:_jb"
         />
       </>
     );
@@ -389,25 +393,25 @@ export function ModelSelector({
 
     triggerContent = (
       <>
-        <div className="flex items-center min-w-0 flex-1" data-oid=".n_ya4q">
+        <div className="flex items-center min-w-0 flex-1" data-oid="z-t-0i7">
           {" "}
           <div
             className={cn(
               "h-2 w-2 rounded-full mr-3 flex-shrink-0 transition-colors duration-200",
               internalSelectedModel ? "bg-green-500" : "bg-amber-500",
             )}
-            data-oid="hbs4n7z"
+            data-oid="dfjb7dd"
           />
-          <div className="flex items-center gap-2 min-w-0" data-oid="5rwclvg">
+          <div className="flex items-center gap-2 min-w-0" data-oid="q4otmcr">
             {" "}
             {modelIcon && (
-              <div className="text-primary flex-shrink-0" data-oid="5vkbdg5">
+              <div className="text-primary flex-shrink-0" data-oid="xi24.c2">
                 {modelIcon}
               </div>
             )}
             <span
               className="text-sm font-semibold text-foreground truncate"
-              data-oid="vj4o3t8"
+              data-oid="aw_23fw"
             >
               {internalSelectedModel?.name || "Select Model"}
             </span>{" "}
@@ -415,7 +419,7 @@ export function ModelSelector({
               <Badge
                 variant={modelBadge.variant}
                 className="text-xs h-5 px-1.5 flex-shrink-0"
-                data-oid="n:98t5e"
+                data-oid="du2rdj0"
               >
                 {modelBadge.text}
               </Badge>
@@ -427,7 +431,7 @@ export function ModelSelector({
             "ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 flex-shrink-0",
             isOpen && "rotate-180",
           )}
-          data-oid="myo32b0"
+          data-oid="wp5a..d"
         />
       </>
     );
@@ -435,8 +439,8 @@ export function ModelSelector({
     triggerDisabled = isLoading && models.length === 0;
   }
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen} data-oid="wvffvjv">
-      <DropdownMenuTrigger asChild data-oid="5cy54jl">
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen} data-oid="16suqe5">
+      <DropdownMenuTrigger asChild data-oid="lx8w9zq">
         <Button
           variant="ghost"
           className={cn(
@@ -449,7 +453,7 @@ export function ModelSelector({
           disabled={triggerDisabled}
           aria-label={`Selected model: ${internalSelectedModel?.name || "Select Model"}`}
           suppressHydrationWarning
-          data-oid="hf88vlf"
+          data-oid="mxjtx5u"
         >
           {triggerContent}
         </Button>
@@ -461,24 +465,25 @@ export function ModelSelector({
         )}
         align="start"
         suppressHydrationWarning
-        data-oid="t6sbbwx"
+        data-oid="697casg"
       >
         {isLoading && models.length === 0 && clientHasHydrated && (
           <div
             className="flex items-center justify-center py-8"
-            data-oid="1_b0.db"
+            data-oid="cl-514x"
           >
             <div
               className="flex flex-col items-center gap-3"
-              data-oid="l0m927b"
+              data-oid="z2vib_b"
             >
               <Loader2
                 className="h-8 w-8 animate-spin text-primary"
-                data-oid="frl4v8j"
+                data-oid="w0tt1nx"
               />
+
               <span
                 className="text-muted-foreground text-sm font-medium"
-                data-oid="xetyzim"
+                data-oid="d5y_dlb"
               >
                 Loading models...
               </span>
@@ -488,28 +493,28 @@ export function ModelSelector({
         {error && clientHasHydrated && (
           <div
             className="flex items-center justify-center py-8"
-            data-oid="3fnodg5"
+            data-oid="yhyjsx_"
           >
             <div
               className="flex flex-col items-center gap-3 text-center"
-              data-oid="x08lpk7"
+              data-oid="5jnpifi"
             >
               <div
                 className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center"
-                data-oid="ujrtcq:"
+                data-oid="6_1rbn3"
               >
                 <ServerCrash
                   className="h-6 w-6 text-destructive"
-                  data-oid="hu0c22p"
+                  data-oid="k1znbbz"
                 />
               </div>
-              <div data-oid="1xggogv">
-                <p className="text-destructive font-medium" data-oid="zjoa79:">
+              <div data-oid="sr3zlye">
+                <p className="text-destructive font-medium" data-oid="s9bs8.l">
                   Connection Error
                 </p>
                 <p
                   className="text-muted-foreground text-xs mt-1"
-                  data-oid="fhqg4o9"
+                  data-oid="ki4q4uv"
                 >
                   Unable to load models
                 </p>
@@ -519,7 +524,7 @@ export function ModelSelector({
                 size="sm"
                 onClick={fetchAndCacheModels}
                 className="mt-2"
-                data-oid="bko:ql_"
+                data-oid="iz9v4yt"
               >
                 Try Again
               </Button>
@@ -527,21 +532,21 @@ export function ModelSelector({
           </div>
         )}
         {!isLoading && !error && models.length === 0 && clientHasHydrated && (
-          <div className="text-center py-8" data-oid="q1tkmkk">
+          <div className="text-center py-8" data-oid="qact2o8">
             <div
               className="flex flex-col items-center gap-3"
-              data-oid="s9omj1e"
+              data-oid="x-frpch"
             >
               <div
                 className="h-12 w-12 rounded-full bg-muted/20 flex items-center justify-center"
-                data-oid="y1d.4_5"
+                data-oid="uqv.cnd"
               >
                 <Search
                   className="h-6 w-6 text-muted-foreground"
-                  data-oid="_booqmp"
+                  data-oid="uy7ybyx"
                 />
               </div>
-              <span className="text-muted-foreground" data-oid="mdfith.">
+              <span className="text-muted-foreground" data-oid=":zzjuy3">
                 No models found
               </span>
             </div>
@@ -553,40 +558,41 @@ export function ModelSelector({
             {" "}
             <DropdownMenuLabel
               className="text-sm font-bold text-foreground px-3 pt-2 pb-3 flex items-center"
-              data-oid="s:y0jpi"
+              data-oid="5.435wu"
             >
               <div
                 className="h-2 w-2 bg-primary rounded-full mr-2"
-                data-oid="vurbtty"
+                data-oid="0b_ve8y"
               />
               Choose your AI model
               <span
                 className="ml-auto text-xs text-muted-foreground font-normal"
-                data-oid="_n27iyz"
+                data-oid="jitnvsi"
               >
                 {filteredModels.length} available
               </span>
             </DropdownMenuLabel>
             {/* Search Input */}
-            <div className="relative mb-3 px-3" data-oid="_8easde">
+            <div className="relative mb-3 px-3" data-oid="sf8n02k">
               <Search
                 className="absolute left-6 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
-                data-oid="w06iyyh"
+                data-oid="yd:ewd4"
               />
+
               <input
                 type="text"
                 placeholder="Search models..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 text-sm bg-background/50 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-200 placeholder:text-muted-foreground/70"
-                data-oid="brj7jlz"
+                data-oid="tg15i5n"
               />
 
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
                   className="absolute right-6 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  data-oid="g5d:0eu"
+                  data-oid="pmmk4bd"
                 >
                   ×
                 </button>
@@ -595,24 +601,25 @@ export function ModelSelector({
             <ScrollArea
               viewportClassName="max-h-[280px]"
               className="pr-2"
-              data-oid="zt576ly"
+              data-oid="xa5o94g"
             >
-              <div className="space-y-1.5" data-oid="rpdom6o">
+              <div className="space-y-1.5" data-oid="i-ravi.">
                 {filteredModels.length === 0 ? (
-                  <div className="text-center py-6" data-oid="453-ij7">
+                  <div className="text-center py-6" data-oid="m_07bw2">
                     <Search
                       className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2"
-                      data-oid="ug1_yfn"
+                      data-oid="8kt-sm0"
                     />
+
                     <p
                       className="text-muted-foreground text-sm"
-                      data-oid="blcgk8n"
+                      data-oid="euxxum4"
                     >
                       No models match your search
                     </p>
                     <p
                       className="text-muted-foreground/70 text-xs mt-1"
-                      data-oid="0edna9o"
+                      data-oid="vi5:m-w"
                     >
                       Try different keywords
                     </p>
@@ -636,15 +643,15 @@ export function ModelSelector({
                           isSelected &&
                             "bg-primary text-white border-primary/30",
                         )}
-                        data-oid="81gl-9c"
+                        data-oid="_qx2.8n"
                       >
                         <div
                           className="flex items-center justify-between w-full"
-                          data-oid="v_986pp"
+                          data-oid="h2na3:2"
                         >
                           <div
                             className="flex items-center gap-3 min-w-0 flex-1"
-                            data-oid="yz2j3nm"
+                            data-oid="l2puxdo"
                           >
                             {" "}
                             <div
@@ -652,17 +659,17 @@ export function ModelSelector({
                                 "flex-shrink-0",
                                 isSelected ? "text-white" : "text-primary",
                               )}
-                              data-oid="85v90q5"
+                              data-oid="m8q81xg"
                             >
                               {modelIcon}
                             </div>
                             <div
                               className="flex flex-col min-w-0 flex-1"
-                              data-oid="0-v.e.j"
+                              data-oid="rq9omqz"
                             >
                               <div
                                 className="flex items-center gap-2"
-                                data-oid=".8d4wnc"
+                                data-oid="ng48zr."
                               >
                                 {" "}
                                 <span
@@ -672,7 +679,7 @@ export function ModelSelector({
                                       ? "text-white"
                                       : "text-foreground group-hover:text-primary",
                                   )}
-                                  data-oid="h7cgn4a"
+                                  data-oid="1r72nbw"
                                 >
                                   {model.name || model.id}
                                 </span>
@@ -688,7 +695,7 @@ export function ModelSelector({
                                       isSelected &&
                                         "bg-white/20 text-white border-white/30",
                                     )}
-                                    data-oid="vgilmx0"
+                                    data-oid="63lxg2b"
                                   >
                                     {modelBadge.text}
                                   </Badge>
@@ -701,7 +708,7 @@ export function ModelSelector({
                                     ? "text-white/80"
                                     : "text-muted-foreground group-hover:text-muted-foreground/80",
                                 )}
-                                data-oid="yya..ch"
+                                data-oid="qr-z4lc"
                               >
                                 by {model.owned_by}
                               </span>
@@ -710,11 +717,11 @@ export function ModelSelector({
                           {isSelected && (
                             <div
                               className="h-6 w-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 ml-2 animate-in zoom-in-0 duration-200"
-                              data-oid="i89vlic"
+                              data-oid="61:.gms"
                             >
                               <Check
                                 className="h-3 w-3 text-white"
-                                data-oid="z.q65d0"
+                                data-oid="khad3-9"
                               />
                             </div>
                           )}
@@ -727,39 +734,39 @@ export function ModelSelector({
             </ScrollArea>
             <DropdownMenuSeparator
               className="my-3 bg-gradient-to-r from-transparent via-border/50 to-transparent"
-              data-oid="f69sq7p"
+              data-oid="4jbeqe4"
             />
             <DropdownMenuItem
               className="p-0 focus:bg-transparent cursor-default select-none rounded-xl"
-              data-oid="2kmw:_e"
+              data-oid="f_4-q0h"
             >
               <div
                 className="flex flex-col items-start p-4 w-full rounded-xl bg-gradient-to-br from-primary/5 to-purple-500/5 border border-primary/20 hover:border-primary/30 transition-all duration-300 group"
-                data-oid=":889rob"
+                data-oid="hvy7l5z"
               >
                 <div
                   className="flex items-center w-full mb-2"
-                  data-oid="mb-xdlf"
+                  data-oid="sphlsi4"
                 >
                   <div
                     className="h-8 w-8 bg-gradient-to-br from-primary to-purple-500 rounded-full flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300"
-                    data-oid="hes6xh8"
+                    data-oid="42_m2lg"
                   >
                     <Sparkles
                       className="h-4 w-4 text-white"
-                      data-oid="m4c5fv7"
+                      data-oid="bezu93m"
                     />
                   </div>
                   <p
                     className="font-bold text-sm text-foreground"
-                    data-oid="a4fe-fd"
+                    data-oid="4hbqf:h"
                   >
                     Upgrade to PyscoutAI Pro
                   </p>
                 </div>
                 <p
                   className="text-xs text-muted-foreground mb-3 leading-relaxed"
-                  data-oid="3w8dy5w"
+                  data-oid="zi9wa5_"
                 >
                   Get access to our most capable models, priority support, and
                   advanced features
@@ -767,7 +774,7 @@ export function ModelSelector({
                 <Button
                   size="sm"
                   className="w-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]"
-                  data-oid="e9jugp:"
+                  data-oid="21tjrya"
                 >
                   Upgrade Now
                 </Button>
