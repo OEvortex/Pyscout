@@ -394,6 +394,7 @@ export default function ChatPage() {
             className="hidden sm:block h-6 w-px bg-border/60"
             data-oid="iz4fs9g"
           />
+
           <ModelSelector
             selectedModelFromParent={currentModel}
             onModelChange={handleModelChange}
@@ -448,6 +449,7 @@ export default function ChatPage() {
                 className="bg-border/50"
                 data-oid="48i:ku."
               />
+
               <DropdownMenuItem
                 onClick={() => handleProfileMenuClick("Manage Account")}
                 className="hover:bg-primary/10 transition-colors"
@@ -457,6 +459,7 @@ export default function ChatPage() {
                   className="mr-2 h-4 w-4 text-primary/80"
                   data-oid="v2guu62"
                 />
+
                 <span data-oid="42j_lh:">Manage Account</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -468,6 +471,7 @@ export default function ChatPage() {
                   className="mr-2 h-4 w-4 text-primary/80"
                   data-oid="w:g.93y"
                 />
+
                 <span data-oid="y5t1:7q">Activity</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -479,12 +483,14 @@ export default function ChatPage() {
                   className="mr-2 h-4 w-4 text-primary/80"
                   data-oid="cozd7yq"
                 />
+
                 <span data-oid="u1gq0j:">Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator
                 className="bg-border/50"
                 data-oid=".ybqyg7"
               />
+
               <DropdownMenuItem
                 onClick={() => handleProfileMenuClick("Help & Feedback")}
                 className="hover:bg-primary/10 transition-colors"
@@ -494,6 +500,7 @@ export default function ChatPage() {
                   className="mr-2 h-4 w-4 text-primary/80"
                   data-oid="eie579h"
                 />
+
                 <span data-oid="mvyklu.">Help & Feedback</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -549,22 +556,39 @@ export default function ChatPage() {
                 data-oid="s0vpy9k"
               >
                 {[
-                  { icon: Brain, text: "Smart Analysis" },
-                  { icon: ImageIcon, text: "Visual Processing" },
-                  { icon: GalleryVerticalEnd, text: "Creative Tools" },
+                  {
+                    icon: ImageIcon,
+                    text: "AI Image Generation",
+                    gradient: "from-blue-400 to-cyan-400",
+                  },
+                  {
+                    icon: Brain,
+                    text: "Smart Prompting",
+                    gradient: "from-purple-400 to-indigo-400",
+                  },
+                  {
+                    icon: GalleryVerticalEnd,
+                    text: "Style Control",
+                    gradient: "from-pink-400 to-rose-400",
+                  },
                 ].map((feature, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-center p-4 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-1000 ease-out"
+                    className="group flex flex-col items-center p-4 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm animate-in fade-in-0 slide-in-from-bottom-4 duration-1000 ease-out hover:bg-card/70 hover:border-primary/30 hover:scale-105 transition-all duration-300 cursor-pointer"
                     style={{ animationDelay: `${400 + index * 200}ms` }}
                     data-oid="ni0r7d_"
                   >
-                    <feature.icon
-                      className="h-6 w-6 text-primary/80 mb-2"
-                      data-oid="1nafq:e"
-                    />
+                    <div
+                      className={`p-2 rounded-xl bg-gradient-to-br ${feature.gradient} mb-3 group-hover:scale-110 transition-transform duration-300`}
+                      data-oid="_mrlra0"
+                    >
+                      <feature.icon
+                        className="h-6 w-6 text-white"
+                        data-oid="1nafq:e"
+                      />
+                    </div>
                     <span
-                      className="text-sm text-muted-foreground font-medium"
+                      className="text-sm text-muted-foreground font-medium group-hover:text-foreground transition-colors duration-300"
                       data-oid="54k1a86"
                     >
                       {feature.text}
