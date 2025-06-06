@@ -1,43 +1,33 @@
-
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
+import type { Metadata } from "next";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 // Removed SidebarProvider and AppSidebar imports
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
-
 export const metadata: Metadata = {
-  title: 'PyscoutAI',
-  description: 'A modern chatbot web app inspired by Gemini',
+  title: "PyscoutAI",
+  description: "A modern chatbot web app inspired by Gemini",
 };
-
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-oid="12:c2hz">
+      <body
+        className="antialiased font-sans"
+        suppressHydrationWarning
+        data-oid="wxpb0os"
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark" // Default to dark theme like Gemini
           enableSystem
           disableTransitionOnChange
+          data-oid="1pjh7_n"
         >
           {/* Removed SidebarProvider and AppSidebar */}
           {children}
-          <Toaster />
+          <Toaster data-oid="7o34:k_" />
         </ThemeProvider>
       </body>
     </html>

@@ -1,14 +1,26 @@
-
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Plus, Image as ImageIcon, Brain, GalleryVerticalEnd, Mic, MicOff, Send } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {
+  Plus,
+  Image as ImageIcon,
+  Brain,
+  GalleryVerticalEnd,
+  Mic,
+  MicOff,
+  Send,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { TokenCounter } from '@/components/ui/TokenCounter';
+import { TokenCounter } from "@/components/ui/TokenCounter";
 
 interface InputBarProps {
   onSendMessage: (content: string, isSuggestionClick?: boolean) => void;
@@ -16,30 +28,37 @@ interface InputBarProps {
   textareaRef?: React.RefObject<HTMLTextAreaElement>;
 }
 
-const MAX_TEXTAREA_HEIGHT = 180; 
+const MAX_TEXTAREA_HEIGHT = 180;
 
-export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextareaRef }: InputBarProps) {
-  const [inputValue, setInputValue] = useState('');
+export function InputBar({
+  onSendMessage,
+  isLoading,
+  textareaRef: externalTextareaRef,
+}: InputBarProps) {
+  const [inputValue, setInputValue] = useState("");
   const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const textareaRefToUse = externalTextareaRef || internalTextareaRef;
   const { toast } = useToast();
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
-  const textBeforeSpeechRef = useRef<string>(''); 
+  const textBeforeSpeechRef = useRef<string>("");
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
 
-  const autoResizeTextarea = useCallback((element: HTMLTextAreaElement | null) => {
-    if (!element) return;
-    element.style.height = 'auto'; 
-    const scrollHeight = element.scrollHeight;
-    if (scrollHeight > MAX_TEXTAREA_HEIGHT) {
-      element.style.height = `${MAX_TEXTAREA_HEIGHT}px`;
-      element.style.overflowY = 'auto';
-    } else {
-      element.style.height = `${scrollHeight}px`;
-      element.style.overflowY = 'hidden';
-    }
-  }, []);
+  const autoResizeTextarea = useCallback(
+    (element: HTMLTextAreaElement | null) => {
+      if (!element) return;
+      element.style.height = "auto";
+      const scrollHeight = element.scrollHeight;
+      if (scrollHeight > MAX_TEXTAREA_HEIGHT) {
+        element.style.height = `${MAX_TEXTAREA_HEIGHT}px`;
+        element.style.overflowY = "auto";
+      } else {
+        element.style.height = `${scrollHeight}px`;
+        element.style.overflowY = "hidden";
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (textareaRefToUse.current) {
@@ -47,11 +66,12 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     }
   }, [inputValue, autoResizeTextarea, textareaRefToUse]);
 
-
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognitionAPI =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
       console.warn("Speech recognition not supported by this browser.");
       setIsSpeechSupported(false);
@@ -60,9 +80,9 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     setIsSpeechSupported(true);
 
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false; 
-    recognition.interimResults = true; 
-    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -70,16 +90,19 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
 
     recognition.onend = () => {
       setIsListening(false);
-    };    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
+    };
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
       setIsListening(false);
-      let errorMessage = 'An error occurred during speech recognition.';
-      if (event.error === 'no-speech') {
-        errorMessage = 'No speech was detected. Please try again.';
-      } else if (event.error === 'audio-capture') {
-        errorMessage = 'Microphone not available. Please check your microphone settings.';
-      } else if (event.error === 'not-allowed') {
-        errorMessage = 'Microphone access denied. Please enable it in browser settings.';
+      let errorMessage = "An error occurred during speech recognition.";
+      if (event.error === "no-speech") {
+        errorMessage = "No speech was detected. Please try again.";
+      } else if (event.error === "audio-capture") {
+        errorMessage =
+          "Microphone not available. Please check your microphone settings.";
+      } else if (event.error === "not-allowed") {
+        errorMessage =
+          "Microphone access denied. Please enable it in browser settings.";
       }
       toast({
         title: "Voice Input Error",
@@ -89,7 +112,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     };
 
     recognition.onresult = (event: any) => {
-      let combinedTranscript = '';
+      let combinedTranscript = "";
       let currentSegmentIsFinal = false;
 
       for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -99,22 +122,24 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
           currentSegmentIsFinal = true;
         }
       }
-      
+
       setInputValue(textBeforeSpeechRef.current + combinedTranscript);
 
       if (currentSegmentIsFinal) {
-        setInputValue(currentVal => {
-          const newValWithSpace = currentVal.trimEnd() + ' ';
-          textBeforeSpeechRef.current = newValWithSpace; 
+        setInputValue((currentVal) => {
+          const newValWithSpace = currentVal.trimEnd() + " ";
+          textBeforeSpeechRef.current = newValWithSpace;
           return newValWithSpace;
         });
       }
 
       if (textareaRefToUse.current) {
-        setTimeout(() => { 
+        setTimeout(() => {
           if (textareaRefToUse.current) {
             textareaRefToUse.current.focus();
-            textareaRefToUse.current.selectionStart = textareaRefToUse.current.selectionEnd = textareaRefToUse.current.value.length;
+            textareaRefToUse.current.selectionStart =
+              textareaRefToUse.current.selectionEnd =
+                textareaRefToUse.current.value.length;
           }
         }, 0);
       }
@@ -131,32 +156,34 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
         speechRecognitionRef.current.stop();
       }
     };
-  }, [toast, textareaRefToUse]); 
-
+  }, [toast, textareaRefToUse]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(event.target.value);
-    textBeforeSpeechRef.current = event.target.value; 
+    textBeforeSpeechRef.current = event.target.value;
   };
-  
+
   const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault();
     if (isListening) {
-      toast({ title: "Voice input active", description: "Please finish voice input before sending."});
+      toast({
+        title: "Voice input active",
+        description: "Please finish voice input before sending.",
+      });
       return;
     }
     if (inputValue.trim() && !isLoading) {
       onSendMessage(inputValue.trim());
-      setInputValue('');
-      textBeforeSpeechRef.current = ''; 
+      setInputValue("");
+      textBeforeSpeechRef.current = "";
       if (textareaRefToUse.current) {
-        textareaRefToUse.current.style.height = 'auto'; 
+        textareaRefToUse.current.style.height = "auto";
       }
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       if (!isListening) {
         handleSubmit();
@@ -177,7 +204,7 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     if (isListening) {
       speechRecognitionRef.current.stop();
     } else {
-      textBeforeSpeechRef.current = inputValue; 
+      textBeforeSpeechRef.current = inputValue;
       try {
         speechRecognitionRef.current.start();
       } catch (e) {
@@ -185,7 +212,8 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
         setIsListening(false);
         toast({
           title: "Voice Input Error",
-          description: "Could not start. Check mic permissions or if it's already active.",
+          description:
+            "Could not start. Check mic permissions or if it's already active.",
           variant: "destructive",
         });
       }
@@ -198,12 +226,12 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
       description: `${featureName} feature will be available in a future update.`,
     });
   };
-    const RightSideButton = () => {
+  const RightSideButton = () => {
     if (isListening) {
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
+        <TooltipProvider data-oid="rscg5r.">
+          <Tooltip data-oid=":.mynv0">
+            <TooltipTrigger asChild data-oid="f1t9b5-">
               <Button
                 type="button"
                 variant="ghost"
@@ -211,20 +239,29 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                 className="h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group/btn border border-red-400/50"
                 onClick={handleMicClick}
                 aria-label="Stop listening"
+                data-oid="13fq2ty"
               >
-                <MicOff className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200" />
+                <MicOff
+                  className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200"
+                  data-oid="nn:yf1c"
+                />
               </Button>
             </TooltipTrigger>
-            <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50"><p>Stop listening</p></TooltipContent>
+            <TooltipContent
+              className="bg-card/95 backdrop-blur-sm border-border/50"
+              data-oid="x76e2k0"
+            >
+              <p data-oid="k:d4i4j">Stop listening</p>
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
     }
     if (inputValue.trim() && !isListening) {
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
+        <TooltipProvider data-oid="6d5xc37">
+          <Tooltip data-oid="7x2yyh:">
+            <TooltipTrigger asChild data-oid="jp1h1l5">
               <Button
                 type="submit"
                 variant="ghost"
@@ -232,19 +269,28 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                 className="h-12 w-12 p-0 rounded-2xl bg-gradient-to-br from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group/btn border border-primary/50"
                 disabled={isLoading}
                 aria-label="Send message"
+                data-oid="talhwe8"
               >
-                <Send className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:translate-x-0.5 transition-all duration-200" />
+                <Send
+                  className="h-5 w-5 group-hover/btn:scale-110 group-hover/btn:translate-x-0.5 transition-all duration-200"
+                  data-oid="xwqwafu"
+                />
               </Button>
             </TooltipTrigger>
-            <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50"><p>Send message</p></TooltipContent>
+            <TooltipContent
+              className="bg-card/95 backdrop-blur-sm border-border/50"
+              data-oid="yyulg9h"
+            >
+              <p data-oid="l:ou_2n">Send message</p>
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       );
     }
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <TooltipProvider data-oid="izb2fhh">
+        <Tooltip data-oid="8wk8poc">
+          <TooltipTrigger asChild data-oid="d00oq0w">
             <Button
               type="button"
               variant="ghost"
@@ -253,12 +299,21 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
               onClick={handleMicClick}
               disabled={isLoading || !isSpeechSupported}
               aria-label="Voice input"
+              data-oid="a9siik0"
             >
-              <Mic className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200" />
+              <Mic
+                className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200"
+                data-oid="ljxzd5a"
+              />
             </Button>
           </TooltipTrigger>
-          <TooltipContent className="bg-card/95 backdrop-blur-sm border-border/50">
-            <p>{isSpeechSupported ? "Voice input" : "Voice input not supported"}</p>
+          <TooltipContent
+            className="bg-card/95 backdrop-blur-sm border-border/50"
+            data-oid="_j38f93"
+          >
+            <p data-oid="3o-goy_">
+              {isSpeechSupported ? "Voice input" : "Voice input not supported"}
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -266,25 +321,33 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
   };
 
   return (
-    <div className="relative p-4 sm:p-6">
+    <div className="relative p-4 sm:p-6" data-oid="lbrgxb2">
       {/* Background glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
-      
-      <form 
-        onSubmit={handleSubmit} 
-        className={cn(
-          "relative w-full max-w-4xl mx-auto group",
-        )}
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none"
+        data-oid="ivj7wcy"
+      />
+
+      <form
+        onSubmit={handleSubmit}
+        className={cn("relative w-full max-w-4xl mx-auto group")}
+        data-oid="e6ol.y0"
       >
-        <div className={cn(
-          "relative bg-card/90 backdrop-blur-xl text-card-foreground p-4 rounded-3xl border border-border/50 shadow-2xl flex flex-col gap-4",
-          "transition-all duration-500 ease-in-out",
-          "group-focus-within:shadow-primary/30 group-focus-within:border-primary/50 group-focus-within:bg-card/95",
-          "before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/5 before:via-purple-500/5 before:to-pink-500/5 before:opacity-0 before:transition-opacity before:duration-500",
-          "group-focus-within:before:opacity-100"
-        )}>
+        <div
+          className={cn(
+            "relative bg-card/90 backdrop-blur-xl text-card-foreground p-4 rounded-3xl border border-border/50 shadow-2xl flex flex-col gap-4",
+            "transition-all duration-500 ease-in-out",
+            "group-focus-within:shadow-primary/30 group-focus-within:border-primary/50 group-focus-within:bg-card/95",
+            "before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-r before:from-primary/5 before:via-purple-500/5 before:to-pink-500/5 before:opacity-0 before:transition-opacity before:duration-500",
+            "group-focus-within:before:opacity-100",
+          )}
+          data-oid="l5t319z"
+        >
           {/* Main input area */}
-          <div className="flex items-end space-x-3 relative z-10"> 
+          <div
+            className="flex items-end space-x-3 relative z-10"
+            data-oid="j2yo2-6"
+          >
             <Textarea
               ref={textareaRefToUse}
               value={inputValue}
@@ -295,23 +358,38 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
               rows={1}
               disabled={isLoading}
               aria-label="Chat message input"
-            />            <div className="shrink-0 self-end mb-1 flex items-center gap-2"> 
+              data-oid="cgqw-83"
+            />
+            <div
+              className="shrink-0 self-end mb-1 flex items-center gap-2"
+              data-oid="hxjp.-2"
+            >
               {/* Token count indicator (compact for right side) */}
               {inputValue.length > 0 && (
-                <div className="text-xs text-muted-foreground/60 hidden sm:block">
-                  <TokenCounter text={inputValue} compact={true} />
+                <div
+                  className="text-xs text-muted-foreground/60 hidden sm:block"
+                  data-oid="5v1.de1"
+                >
+                  <TokenCounter
+                    text={inputValue}
+                    compact={true}
+                    data-oid="3w6xm:3"
+                  />
                 </div>
               )}
-              <RightSideButton />
+              <RightSideButton data-oid="5ts9z.n" />
             </div>
           </div>
-          
+
           {/* Action buttons row */}
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center space-x-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+          <div
+            className="flex items-center justify-between relative z-10"
+            data-oid="ga3ybg2"
+          >
+            <div className="flex items-center space-x-2" data-oid="fb31jsl">
+              <TooltipProvider data-oid="15t49_c">
+                <Tooltip data-oid="riez5m:">
+                  <TooltipTrigger asChild data-oid="0txuvwa">
                     <Button
                       type="button"
                       variant="ghost"
@@ -320,58 +398,105 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
                       disabled={isLoading}
                       aria-label="Attach"
                       onClick={() => showComingSoonToast("Attach file")}
+                      data-oid="ybc5vuo"
                     >
-                      <Plus className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200" />
+                      <Plus
+                        className="h-5 w-5 group-hover/btn:scale-110 transition-transform duration-200"
+                        data-oid="nn-4vq9"
+                      />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-card/95 backdrop-blur-sm border-border/50">
-                    <p>Attach file</p>
+                  <TooltipContent
+                    side="top"
+                    className="bg-card/95 backdrop-blur-sm border-border/50"
+                    data-oid="cdbh7d."
+                  >
+                    <p data-oid="nd4rjpu">Attach file</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-                {[
-                { icon: ImageIcon, label: "Image", tip: "Image Generation", action: () => showComingSoonToast("Image Generation"), gradient: "from-blue-400 to-cyan-400" },
-                { icon: Brain, label: "Research", tip: "Deep research", action: () => showComingSoonToast("Deep Research"), gradient: "from-purple-400 to-indigo-400" },
-                { icon: GalleryVerticalEnd, label: "Canvas", tip: "Open canvas", action: () => showComingSoonToast("Canvas"), gradient: "from-pink-400 to-rose-400" },
+              {[
+                {
+                  icon: ImageIcon,
+                  label: "Image",
+                  tip: "Image Generation",
+                  action: () => showComingSoonToast("Image Generation"),
+                  gradient: "from-blue-400 to-cyan-400",
+                },
+                {
+                  icon: Brain,
+                  label: "Research",
+                  tip: "Deep research",
+                  action: () => showComingSoonToast("Deep Research"),
+                  gradient: "from-purple-400 to-indigo-400",
+                },
+                {
+                  icon: GalleryVerticalEnd,
+                  label: "Canvas",
+                  tip: "Open canvas",
+                  action: () => showComingSoonToast("Canvas"),
+                  gradient: "from-pink-400 to-rose-400",
+                },
               ].map((item, index) => (
-                <TooltipProvider key={index}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <TooltipProvider key={index} data-oid="5nhdz_c">
+                  <Tooltip data-oid="13bpy2:">
+                    <TooltipTrigger asChild data-oid="fuyllwm">
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         className={cn(
                           "text-muted-foreground hover:text-primary hover:bg-gradient-to-r hover:text-white rounded-xl px-3 py-2 h-9 text-sm font-medium disabled:opacity-50 transition-all duration-300 group/btn border border-transparent hover:border-white/20",
-                          `hover:bg-gradient-to-r hover:${item.gradient} hover:shadow-lg`
+                          `hover:bg-gradient-to-r hover:${item.gradient} hover:shadow-lg`,
                         )}
                         disabled={isLoading}
                         aria-label={item.label}
                         onClick={item.action}
+                        data-oid="w2uy4t."
                       >
-                        <item.icon className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform duration-200" />
+                        <item.icon
+                          className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform duration-200"
+                          data-oid="1ona9d8"
+                        />
                         {item.label}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-card/95 backdrop-blur-sm border-border/50">
-                      <p>{item.tip}</p>
-                    </TooltipContent>                  </Tooltip>
+                    <TooltipContent
+                      side="top"
+                      className="bg-card/95 backdrop-blur-sm border-border/50"
+                      data-oid="st5ip_e"
+                    >
+                      <p data-oid="m0hhjpe">{item.tip}</p>
+                    </TooltipContent>{" "}
+                  </Tooltip>
                 </TooltipProvider>
               ))}
             </div>
-            
+
             {/* Status indicators */}
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground/60">
+            <div
+              className="flex items-center space-x-2 text-xs text-muted-foreground/60"
+              data-oid="aw2vjeh"
+            >
               {isListening && (
-                <div className="flex items-center space-x-1 animate-pulse">
-                  <div className="h-2 w-2 bg-red-400 rounded-full animate-ping" />
-                  <span>Listening...</span>
+                <div
+                  className="flex items-center space-x-1 animate-pulse"
+                  data-oid="09fjwkp"
+                >
+                  <div
+                    className="h-2 w-2 bg-red-400 rounded-full animate-ping"
+                    data-oid="mgzmdc-"
+                  />
+                  <span data-oid="f9-n64b">Listening...</span>
                 </div>
               )}
               {isLoading && (
-                <div className="flex items-center space-x-1">
-                  <div className="h-2 w-2 bg-primary rounded-full animate-bounce" />
-                  <span>Processing...</span>
+                <div className="flex items-center space-x-1" data-oid="m_hz6ko">
+                  <div
+                    className="h-2 w-2 bg-primary rounded-full animate-bounce"
+                    data-oid="_6:s515"
+                  />
+                  <span data-oid="m5q4kpy">Processing...</span>
                 </div>
               )}
             </div>
@@ -381,4 +506,3 @@ export function InputBar({ onSendMessage, isLoading, textareaRef: externalTextar
     </div>
   );
 }
-

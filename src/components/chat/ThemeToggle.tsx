@@ -1,5 +1,4 @@
-
-"use client"
+"use client";
 
 // This file will be replaced by ThemeSelector.tsx
 // For now, an empty export to avoid breaking imports if any exist.
