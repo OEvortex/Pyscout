@@ -199,7 +199,7 @@ export default function ChatPage() {
         router.replace(currentPath, { scroll: false });
       }
     }
-  }, [searchParams, router]);
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
